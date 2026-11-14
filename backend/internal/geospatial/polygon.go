@@ -35,24 +35,144 @@ func (r Ring) SignedArea() float64 {
 	return area / 2.0
 }
 
-// Validate verifies that the ring has at least 3 distinct vertices and is closed.
+const ringEps = 1e-9
+
+func pointsEqual(p1, p2 Point) bool {
+	return math.Abs(p1.Lon-p2.Lon) <= ringEps && math.Abs(p1.Lat-p2.Lat) <= ringEps
+}
+
+func crossProduct(p, q, r Point) float64 {
+	return (q.Lon-p.Lon)*(r.Lat-p.Lat) - (q.Lat-p.Lat)*(r.Lon-p.Lon)
+}
+
+func isPointOnSegment(p, a, b Point) bool {
+	cp := crossProduct(a, b, p)
+	scale := math.Max(math.Max(math.Abs(b.Lon-a.Lon), math.Abs(b.Lat-a.Lat)), 1.0)
+	if math.Abs(cp)/scale > 1e-9 {
+		return false
+	}
+	minLon := math.Min(a.Lon, b.Lon) - ringEps
+	maxLon := math.Max(a.Lon, b.Lon) + ringEps
+	minLat := math.Min(a.Lat, b.Lat) - ringEps
+	maxLat := math.Max(a.Lat, b.Lat) + ringEps
+	return p.Lon >= minLon && p.Lon <= maxLon && p.Lat >= minLat && p.Lat <= maxLat
+}
+
+func segmentsIntersect(a, b, c, d Point) bool {
+	// Bounding box quick rejection
+	if math.Max(a.Lon, b.Lon) < math.Min(c.Lon, d.Lon)-ringEps ||
+		math.Min(a.Lon, b.Lon) > math.Max(c.Lon, d.Lon)+ringEps ||
+		math.Max(a.Lat, b.Lat) < math.Min(c.Lat, d.Lat)-ringEps ||
+		math.Min(a.Lat, b.Lat) > math.Max(c.Lat, d.Lat)+ringEps {
+		return false
+	}
+
+	// Check if any endpoint lies on the other segment (self-touching or overlapping)
+	if isPointOnSegment(a, c, d) || isPointOnSegment(b, c, d) ||
+		isPointOnSegment(c, a, b) || isPointOnSegment(d, a, b) {
+		return true
+	}
+
+	// Interior crossing using signs of cross products
+	cp1 := crossProduct(a, b, c)
+	cp2 := crossProduct(a, b, d)
+	cp3 := crossProduct(c, d, a)
+	cp4 := crossProduct(c, d, b)
+
+	return ((cp1 > ringEps && cp2 < -ringEps) || (cp1 < -ringEps && cp2 > ringEps)) &&
+		((cp3 > ringEps && cp4 < -ringEps) || (cp3 < -ringEps && cp4 > ringEps))
+}
+
+// Validate verifies that the ring forms a geometrically sound linear ring:
+// - Contains at least 4 points (including closure).
+// - All coordinates are finite and within valid geographic bounds.
+// - Starts and ends at the identical coordinate (correct closure).
+// - Contains no consecutive duplicate vertices (degenerate edges).
+// - Contains at least 3 distinct vertices.
+// - Encloses non-zero area (rejecting flat/collinear degenerate rings).
+// - Contains no self-intersections, crossing edges, or backtracking folds.
 func (r Ring) Validate() error {
 	n := len(r)
 	if n < 4 {
 		return fmt.Errorf("linear ring must contain at least 4 points (including closure), got %d", n)
 	}
+
 	for i, pt := range r {
 		if err := pt.Validate(); err != nil {
 			return fmt.Errorf("point %d in ring is invalid: %w", i, err)
 		}
 	}
+
 	first := r[0]
 	last := r[n-1]
-	const eps = 1e-9
-	if math.Abs(first.Lon-last.Lon) > eps || math.Abs(first.Lat-last.Lat) > eps {
+	if !pointsEqual(first, last) {
 		return fmt.Errorf("linear ring is not closed: first point (%f, %f) != last point (%f, %f)",
 			first.Lon, first.Lat, last.Lon, last.Lat)
 	}
+
+	// 1. Check for consecutive duplicate vertices
+	for i := 0; i < n-1; i++ {
+		if pointsEqual(r[i], r[i+1]) {
+			return fmt.Errorf("ring contains consecutive duplicate vertex at index %d (%f, %f)", i, r[i].Lon, r[i].Lat)
+		}
+	}
+
+	// 2. Count distinct vertices (excluding closure point)
+	distinct := make([]Point, 0, n-1)
+	for i := 0; i < n-1; i++ {
+		isDup := false
+		for _, d := range distinct {
+			if pointsEqual(r[i], d) {
+				isDup = true
+				break
+			}
+		}
+		if !isDup {
+			distinct = append(distinct, r[i])
+		}
+	}
+	if len(distinct) < 3 {
+		return fmt.Errorf("linear ring must contain at least 3 distinct vertices, got %d", len(distinct))
+	}
+
+	// 3. Non-zero area check (rejects collinear/flat degenerate rings)
+	area := math.Abs(r.SignedArea())
+	if area < 1e-12 {
+		return fmt.Errorf("linear ring has degenerate zero area (%e)", area)
+	}
+
+	// 4. Self-intersection and backtracking checks
+	numSegs := n - 1
+	for i := 0; i < numSegs; i++ {
+		s1A := r[i]
+		s1B := r[i+1]
+
+		for j := i + 1; j < numSegs; j++ {
+			s2A := r[j]
+			s2B := r[j+1]
+
+			isAdjacent := (j == i+1) || (i == 0 && j == numSegs-1)
+			if isAdjacent {
+				// For adjacent segments, verify they do not fold back on each other
+				if j == i+1 {
+					if isPointOnSegment(s2B, s1A, s1B) || isPointOnSegment(s1A, s2A, s2B) {
+						return fmt.Errorf("ring segments %d and %d fold back or overlap", i, j)
+					}
+				} else {
+					if isPointOnSegment(s1B, s2A, s2B) || isPointOnSegment(s2A, s1A, s1B) {
+						return fmt.Errorf("ring segments %d and %d fold back or overlap", i, j)
+					}
+				}
+				continue
+			}
+
+			// Non-adjacent segments must not intersect or touch
+			if segmentsIntersect(s1A, s1B, s2A, s2B) {
+				return fmt.Errorf("ring self-intersects between segment %d and segment %d", i, j)
+			}
+		}
+	}
+
 	return nil
 }
 

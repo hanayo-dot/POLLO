@@ -57,6 +57,172 @@ func TestRingValidateAndArea(t *testing.T) {
 	}
 }
 
+func TestRingValidationRigorous(t *testing.T) {
+	// Table-driven tests for strengthened ring validation (Finding 5)
+	tests := []struct {
+		name    string
+		ring    Ring
+		wantErr bool
+	}{
+		{
+			name: "valid CCW square",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 5, Lat: 0},
+				{Lon: 5, Lat: 5},
+				{Lon: 0, Lat: 5},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid polygon with collinear intermediate vertex on edge",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 10, Lat: 0},
+				{Lon: 10, Lat: 10},
+				{Lon: 5, Lat: 10}, // Intermediate vertex on top edge (valid, non-reversing)
+				{Lon: 0, Lat: 10},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid: consecutive duplicate vertices",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 5, Lat: 0},
+				{Lon: 5, Lat: 0}, // Duplicate
+				{Lon: 5, Lat: 5},
+				{Lon: 0, Lat: 5},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: fewer than 3 distinct vertices",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 5, Lat: 5},
+				{Lon: 0, Lat: 0},
+				{Lon: 5, Lat: 5},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: degenerate collinear zero area",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 2, Lat: 2},
+				{Lon: 5, Lat: 5},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: self-intersecting crossing bowtie",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 10, Lat: 10},
+				{Lon: 0, Lat: 10},
+				{Lon: 10, Lat: 0},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: asymmetric crossing bowtie with non-zero net area",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 10, Lat: 12},
+				{Lon: 0, Lat: 10},
+				{Lon: 10, Lat: 0},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: self-touching vertex (pinched figure-8)",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 5, Lat: 5},
+				{Lon: 0, Lat: 10},
+				{Lon: 5, Lat: 5}, // Touches prior vertex
+				{Lon: 10, Lat: 10},
+				{Lon: 10, Lat: 0},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: backtracking spike",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 10, Lat: 0},
+				{Lon: 5, Lat: 0}, // Backtracks 180° along segment
+				{Lon: 10, Lat: 10},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: NaN coordinate",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: math.NaN(), Lat: 5},
+				{Lon: 5, Lat: 5},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: Inf coordinate",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 5, Lat: math.Inf(1)},
+				{Lon: 5, Lat: 5},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: out-of-range longitude",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 185.0, Lat: 0},
+				{Lon: 5, Lat: 5},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid: out-of-range latitude",
+			ring: Ring{
+				{Lon: 0, Lat: 0},
+				{Lon: 5, Lat: 95.0},
+				{Lon: 5, Lat: 5},
+				{Lon: 0, Lat: 0},
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.ring.Validate()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr = %v", err, tt.wantErr)
+			}
+			// Verify NewPolygon also rejects invalid rings
+			_, polyErr := NewPolygon(tt.ring)
+			if (polyErr != nil) != tt.wantErr {
+				t.Errorf("NewPolygon() error = %v, wantErr = %v", polyErr, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestPolygonConvex(t *testing.T) {
 	poly, err := NewPolygon(Ring{
 		{Lon: 0, Lat: 0},
