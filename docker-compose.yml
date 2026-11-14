@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -13,8 +11,13 @@ services:
       - ENV=development
       - API_PREFIX=/api/v1
       - CORS_ALLOWED_ORIGINS=http://localhost:3000
+      - NASA_EARTHDATA_USERNAME=${NASA_EARTHDATA_USERNAME:-}
+      - NASA_EARTHDATA_PASSWORD=${NASA_EARTHDATA_PASSWORD:-}
+      - NASA_EARTHDATA_BEARER_TOKEN=${NASA_EARTHDATA_BEARER_TOKEN:-}
+      - NASA_GIBS_ENDPOINT=${NASA_GIBS_ENDPOINT:-https://gibs.earthdata.nasa.gov/wmts/epsg3857/best}
+      - CACHE_DIR=/app/data/cache
     volumes:
-      - ./backend:/app
+      - ./data/cache:/app/data/cache
     restart: unless-stopped
 
   frontend:

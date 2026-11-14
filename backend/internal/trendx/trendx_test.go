@@ -98,7 +98,7 @@ func TestDeseasonalize(t *testing.T) {
 		t.Errorf("expected Jan mean 11.0, got %f", stats[1].Mean)
 	}
 	// Anomaly for first point: 10 - 11 = -1
-	if math.Abs(deseas[0].Anomaly - (-1.0)) > 1e-6 {
+	if math.Abs(deseas[0].Anomaly-(-1.0)) > 1e-6 {
 		t.Errorf("expected anomaly -1.0, got %f", deseas[0].Anomaly)
 	}
 }
