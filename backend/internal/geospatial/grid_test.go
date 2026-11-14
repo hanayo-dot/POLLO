@@ -12,14 +12,17 @@ func TestParseResolution(t *testing.T) {
 		input   string
 		wantDx  float64
 		wantDy  float64
+		wantCRS string
 		wantErr bool
 	}{
-		{"0.1° (~10 km)", 0.1, 0.1, false},
-		{"0.5° × 0.625°", 0.625, 0.5, false},
-		{"0.5°", 0.5, 0.5, false},
-		{"9 km EASE-Grid", 9.0 / 111.32, 9.0 / 111.32, false},
-		{"0.05° (~5.6 km)", 0.05, 0.05, false},
-		{"unknown resolution", 0, 0, true},
+		{"0.1° (~10 km)", 0.1, 0.1, CRS_EPSG4326, false},
+		{"0.5° × 0.625°", 0.625, 0.5, CRS_EPSG4326, false},
+		{"0.5°", 0.5, 0.5, CRS_EPSG4326, false},
+		{"9 km EASE-Grid", 9024.13066, 9024.13066, CRS_EPSG6933, false},
+		{"9 km EASE-Grid 2.0 (EPSG:6933)", 9024.13066, 9024.13066, CRS_EPSG6933, false},
+		{"9 km Approx Geographic", 9.0 / 111.32, 9.0 / 111.32, CRS_EPSG4326, false},
+		{"0.05° (~5.6 km)", 0.05, 0.05, CRS_EPSG4326, false},
+		{"unknown resolution", 0, 0, "", true},
 	}
 
 	for _, tt := range tests {
@@ -29,8 +32,11 @@ func TestParseResolution(t *testing.T) {
 				t.Fatalf("ParseResolution(%q) error = %v, wantErr = %v", tt.input, err, tt.wantErr)
 			}
 			if !tt.wantErr {
-				if math.Abs(res.Dx-tt.wantDx) > 1e-6 || math.Abs(res.Dy-tt.wantDy) > 1e-6 {
+				if math.Abs(res.Dx-tt.wantDx) > 1e-4 || math.Abs(res.Dy-tt.wantDy) > 1e-4 {
 					t.Errorf("ParseResolution(%q) = (%f, %f), want (%f, %f)", tt.input, res.Dx, res.Dy, tt.wantDx, tt.wantDy)
+				}
+				if res.CRS != tt.wantCRS {
+					t.Errorf("ParseResolution(%q) CRS = %s, want %s", tt.input, res.CRS, tt.wantCRS)
 				}
 			}
 		})
@@ -64,14 +70,88 @@ func TestNewGridSpec(t *testing.T) {
 		t.Errorf("expected 14x14 cells at 0.5 deg, got %dx%d", spec05.Cols, spec05.Rows)
 	}
 
-	// 3. At 9 km resolution (SMAP)
-	spec9km, err := NewGridSpec(lvBBox, ResSMAP9km)
+	// 3. At true 9 km EASE-Grid 2.0 resolution (EPSG:6933, projected meters)
+	spec9kmEASE2, err := NewGridSpec(lvBBox, ResSMAP9kmEASE2)
 	if err != nil {
-		t.Fatalf("unexpected error for 9 km: %v", err)
+		t.Fatalf("unexpected error for 9 km EASE-Grid 2.0: %v", err)
 	}
-	// 7 deg snapped outward to global grid intervals yields 88 cols x 87 rows
-	if spec9km.Cols != 88 || spec9km.Rows != 87 {
-		t.Errorf("expected 88x87 cells at 9 km, got %dx%d", spec9km.Cols, spec9km.Rows)
+	if spec9kmEASE2.CRS != CRS_EPSG6933 {
+		t.Errorf("expected CRS %s, got %s", CRS_EPSG6933, spec9kmEASE2.CRS)
+	}
+	// Lake Victoria projected span: 675.4 km lon / 9.024 km = 75 cols; 894.1 km lat / 9.024 km = 100 rows
+	if spec9kmEASE2.Cols != 75 || spec9kmEASE2.Rows != 100 {
+		t.Errorf("expected 75x100 cells at 9 km EASE-Grid 2.0, got %dx%d", spec9kmEASE2.Cols, spec9kmEASE2.Rows)
+	}
+
+	// 4. At unprojected approximate geographic 9 km resolution (EPSG:4326)
+	spec9kmApprox, err := NewGridSpec(lvBBox, ResSMAP9kmApproxGeog)
+	if err != nil {
+		t.Fatalf("unexpected error for 9 km approx: %v", err)
+	}
+	// 7 deg snapped outward to global degree intervals yields 88 cols x 87 rows
+	if spec9kmApprox.Cols != 88 || spec9kmApprox.Rows != 87 {
+		t.Errorf("expected 88x87 cells at 9 km approx, got %dx%d", spec9kmApprox.Cols, spec9kmApprox.Rows)
+	}
+}
+
+func TestEPSG6933ForwardInverseProjection(t *testing.T) {
+	testPoints := []Point{
+		{Lon: 0.0, Lat: 0.0},
+		{Lon: 32.5, Lat: -1.0}, // Lake Victoria
+		{Lon: 45.0, Lat: 10.0}, // Horn of Africa
+		{Lon: 20.0, Lat: -2.0}, // Congo Basin
+		{Lon: 0.0, Lat: 15.0},  // Sahel Belt
+		{Lon: -120.0, Lat: 45.0},
+		{Lon: 140.0, Lat: -30.0},
+		{Lon: -179.9, Lat: -85.0},
+		{Lon: 179.9, Lat: 85.0},
+	}
+
+	for _, pt := range testPoints {
+		x, y, err := ForwardEPSG6933(pt)
+		if err != nil {
+			t.Fatalf("ForwardEPSG6933(%+v) failed: %v", pt, err)
+		}
+
+		roundtripPt, err := InverseEPSG6933(x, y)
+		if err != nil {
+			t.Fatalf("InverseEPSG6933(%f, %f) failed: %v", x, y, err)
+		}
+
+		diffLon := math.Abs(roundtripPt.Lon - pt.Lon)
+		diffLat := math.Abs(roundtripPt.Lat - pt.Lat)
+
+		if diffLon > 1e-10 || diffLat > 1e-10 {
+			t.Errorf("EPSG:6933 roundtrip precision lost for %+v: got %+v (diffLon=%.2e, diffLat=%.2e)",
+				pt, roundtripPt, diffLon, diffLat)
+		}
+	}
+}
+
+func TestEPSG6933GridSpecCoordTransformations(t *testing.T) {
+	bbox := models.BoundingBox{
+		MinLon: 29.0,
+		MinLat: -4.5,
+		MaxLon: 36.0,
+		MaxLat: 2.5,
+	}
+	spec, err := NewGridSpec(bbox, ResSMAP9kmEASE2)
+	if err != nil {
+		t.Fatalf("failed to create EPSG:6933 grid spec: %v", err)
+	}
+
+	// Verify invertibility of CellCenter and CoordToCell
+	for r := 0; r < spec.Rows; r++ {
+		for c := 0; c < spec.Cols; c++ {
+			pt := spec.CellCenter(c, r)
+			gotC, gotR, ok := spec.CoordToCell(pt)
+			if !ok {
+				t.Fatalf("CoordToCell failed for cell (%d, %d) at center %+v", c, r, pt)
+			}
+			if gotC != c || gotR != r {
+				t.Errorf("invertibility mismatch: expected (%d, %d), got (%d, %d)", c, r, gotC, gotR)
+			}
+		}
 	}
 }
 

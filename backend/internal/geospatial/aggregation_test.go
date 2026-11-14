@@ -167,6 +167,41 @@ func TestCosineLatitudeAreaWeighting(t *testing.T) {
 	}
 }
 
+func TestEPSG6933EqualAreaWeighting(t *testing.T) {
+	// For EPSG:6933 (Lambert Cylindrical Equal-Area), each cell represents uniform surface area.
+	// Therefore, weighted aggregation must NOT apply cosine latitude scaling and must match unweighted aggregation.
+	spec := GridSpec{
+		CRS:      CRS_EPSG6933,
+		Unit:     "metre",
+		BBox:     models.BoundingBox{MinLon: 0, MinLat: -30, MaxLon: 10, MaxLat: 90},
+		ProjBBox: ProjectedBoundingBox{MinX: 0, MaxX: 100000, MinY: -500000, MaxY: 500000},
+		ResX:     100000.0,
+		ResY:     500000.0,
+		Cols:     1,
+		Rows:     2,
+	}
+	grid := NewSpatialGrid(spec, 0.0)
+	grid.Set(0, 0, 10.0) // Northern cell
+	grid.Set(0, 1, 20.0) // Equatorial cell
+
+	unwMean, err := SpatialMean(grid, false)
+	if err != nil {
+		t.Fatalf("unweighted mean failed: %v", err)
+	}
+	if math.Abs(unwMean-15.0) > 1e-9 {
+		t.Errorf("expected unweighted mean 15.0, got %f", unwMean)
+	}
+
+	wMean, err := SpatialMean(grid, true)
+	if err != nil {
+		t.Fatalf("weighted mean failed: %v", err)
+	}
+	// For equal area, weighted mean must equal unweighted mean (15.0), not skewed by cosine latitude (16.6667)
+	if math.Abs(wMean-15.0) > 1e-9 {
+		t.Errorf("expected equal-area weighted mean 15.0, got %f", wMean)
+	}
+}
+
 func TestNoDataAndNaNHandling(t *testing.T) {
 	spec := GridSpec{
 		BBox: models.BoundingBox{MinLon: 0, MinLat: 0, MaxLon: 2, MaxLat: 2},

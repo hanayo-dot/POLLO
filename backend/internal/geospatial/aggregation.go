@@ -129,7 +129,7 @@ func computeMean(grid *SpatialGrid, mask *SpatialMask, weighted bool) (float64, 
 		}
 
 		w := 1.0
-		if weighted {
+		if weighted && grid.Spec.CRS != CRS_EPSG6933 {
 			lat := grid.Spec.BBox.MaxLat - (float64(row)+0.5)*grid.Spec.ResY
 			w = math.Cos(lat * degToRad)
 			if w < 0 {
@@ -145,11 +145,11 @@ func computeMean(grid *SpatialGrid, mask *SpatialMask, weighted bool) (float64, 
 	if count == 0 {
 		return math.NaN(), errors.New("cannot compute spatial mean: no valid data cells")
 	}
-	if weighted && weightSum <= 0 {
+	if weighted && grid.Spec.CRS != CRS_EPSG6933 && weightSum <= 0 {
 		return math.NaN(), errors.New("sum of spatial weights is zero")
 	}
 
-	if weighted {
+	if weighted && grid.Spec.CRS != CRS_EPSG6933 {
 		return sum / weightSum, nil
 	}
 	return sum / float64(count), nil
@@ -161,7 +161,8 @@ func computeMedian(grid *SpatialGrid, mask *SpatialMask, weighted bool) (float64
 
 	iterator := getCellIterator(grid, mask)
 
-	if !weighted {
+	// Equal-area grids (e.g. EPSG:6933) have constant cell area, so weighted median reduces to standard median.
+	if !weighted || grid.Spec.CRS == CRS_EPSG6933 {
 		// Collect valid values
 		vals := make([]float64, 0, 64)
 		for iterator.Next() {
@@ -261,7 +262,7 @@ func computeVariance(grid *SpatialGrid, mask *SpatialMask, sample, weighted bool
 		diff := val - mean
 		diffSq := diff * diff
 
-		if !weighted {
+		if !weighted || grid.Spec.CRS == CRS_EPSG6933 {
 			sumSqDiff += diffSq
 		} else {
 			lat := grid.Spec.BBox.MaxLat - (float64(row)+0.5)*grid.Spec.ResY
@@ -280,7 +281,7 @@ func computeVariance(grid *SpatialGrid, mask *SpatialMask, sample, weighted bool
 		return math.NaN(), errors.New("cannot compute spatial variance: no valid data cells")
 	}
 
-	if !weighted {
+	if !weighted || grid.Spec.CRS == CRS_EPSG6933 {
 		if sample {
 			if count <= 1 {
 				return 0.0, nil
