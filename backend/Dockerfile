@@ -25,17 +25,16 @@ FROM alpine:3.19 AS runner
 
 WORKDIR /app
 
-# Install CA certificates for secure NASA Earthdata / GIBS HTTPS connections
-RUN apk add --no-cache ca-certificates tzdata
-
-# Create non-root user
-RUN addgroup -S pollo && adduser -S pollo -G pollo
+# Install CA certificates for secure NASA Earthdata / GIBS HTTPS connections,
+# create the non-root user, and prepare the cache directory
+RUN apk add --no-cache ca-certificates tzdata && \
+    addgroup -S pollo && \
+    adduser -S pollo -G pollo && \
+    mkdir -p /app/data/cache && \
+    chown -R pollo:pollo /app
 
 # Copy compiled binary from builder
 COPY --from=builder /app/bin/server /app/server
-
-# Create cache directory with correct permissions
-RUN mkdir -p /app/data/cache && chown -R pollo:pollo /app
 
 USER pollo
 
