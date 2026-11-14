@@ -1,0 +1,54 @@
+# Binaries and build artifacts
+backend/bin/
+backend/dist/
+backend/tmp/
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+
+# Go test and coverage
+*.test
+*.out
+backend/coverage.txt
+
+# Node.js and Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/.turbo
+frontend/.eslintcache
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+*.env
+
+# Operating System files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Logs and runtime data
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Geospatial and raster cache
+*.nc
+*.hdf
+*.h5
+*.tif
+*.tiff
+data/cache/
