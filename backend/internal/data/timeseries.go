@@ -287,7 +287,7 @@ func ExtractRegionSpatialTimeSeries(
 
 	res, err := geospatial.ParseResolution(v.SpatialResolution)
 	if err != nil {
-		res = geospatial.ResMERRA2Square
+		return nil, fmt.Errorf("unsupported or invalid spatial resolution %q for variable %s: %w", v.SpatialResolution, v.ID, err)
 	}
 
 	stream, err := NewBenchmarkGridStream(v.ID, 2000, 2024, reg.BBox, res)
@@ -313,7 +313,7 @@ func ExtractMultiRegionSpatialTimeSeries(
 
 	res, err := geospatial.ParseResolution(v.SpatialResolution)
 	if err != nil {
-		res = geospatial.ResMERRA2Square
+		return nil, fmt.Errorf("unsupported or invalid spatial resolution %q for variable %s: %w", v.SpatialResolution, v.ID, err)
 	}
 
 	targets := make([]geospatial.RegionTarget, 0, len(regionIDs))

@@ -3,10 +3,12 @@ package data
 import (
 	"fmt"
 	"math"
+	"strings"
 	"testing"
 
 	"github.com/pollo/backend/internal/data/catalog"
 	"github.com/pollo/backend/internal/geospatial"
+	"github.com/pollo/backend/internal/models"
 )
 
 func TestCatalogRegionPolygons(t *testing.T) {
@@ -175,5 +177,50 @@ func TestGenerateBenchmarkTimeSeriesBackwardCompatibility(t *testing.T) {
 	}
 	if len(points) != 300 {
 		t.Errorf("expected 300 points, got %d", len(points))
+	}
+}
+
+func TestUnsupportedResolutionRejection(t *testing.T) {
+	// Regression test for Finding 6: Unsupported or misspelled spatial resolution
+	// strings must fail immediately and never silently fall back to an arbitrary default grid.
+
+	// 1. Verify all valid catalog variables continue to succeed
+	for _, v := range AvailableVariables() {
+		t.Run("valid_"+v.ID, func(t *testing.T) {
+			series, err := ExtractRegionSpatialTimeSeries("lake_victoria_basin", v.ID, geospatial.AggMean, false)
+			if err != nil {
+				t.Fatalf("expected variable %s (%q) to succeed, got error: %v", v.ID, v.SpatialResolution, err)
+			}
+			if len(series) == 0 {
+				t.Fatalf("expected non-empty observations for %s", v.ID)
+			}
+		})
+	}
+
+	// 2. Register a test variable with an unsupported/misspelled resolution string
+	badVar := models.DatasetVariable{
+		ID:                "TEST_UNSUPPORTED_RES",
+		Name:              "Unsupported Resolution Test Dataset",
+		SpatialResolution: "0.25° (unsupported/misspelled)",
+	}
+	RegisterVariable(badVar)
+	defer UnregisterVariable(badVar.ID)
+
+	// Single-region extraction must return an explicit error and NEVER return fallback data
+	singleSeries, err := ExtractRegionSpatialTimeSeries("lake_victoria_basin", badVar.ID, geospatial.AggMean, false)
+	if err == nil {
+		t.Fatalf("expected error for unsupported resolution, got data series with %d points", len(singleSeries))
+	}
+	if !strings.Contains(err.Error(), "unsupported or invalid spatial resolution") {
+		t.Errorf("expected error message to specify unsupported resolution, got: %v", err)
+	}
+
+	// Multi-region extraction must also return an explicit error and NEVER return fallback data
+	multiSeries, err := ExtractMultiRegionSpatialTimeSeries([]string{"lake_victoria_basin"}, badVar.ID, geospatial.AggMean, false)
+	if err == nil {
+		t.Fatalf("expected error for multi-region extraction with unsupported resolution, got map with %d entries", len(multiSeries))
+	}
+	if !strings.Contains(err.Error(), "unsupported or invalid spatial resolution") {
+		t.Errorf("expected error message to specify unsupported resolution, got: %v", err)
 	}
 }

@@ -23,6 +23,9 @@ func TestParseResolution(t *testing.T) {
 		{"9 km Approx Geographic", 9.0 / 111.32, 9.0 / 111.32, CRS_EPSG4326, false},
 		{"0.05° (~5.6 km)", 0.05, 0.05, CRS_EPSG4326, false},
 		{"unknown resolution", 0, 0, "", true},
+		{"", 0, 0, "", true},
+		{"   ", 0, 0, "", true},
+		{"0.25° misspelled", 0, 0, "", true},
 	}
 
 	for _, tt := range tests {

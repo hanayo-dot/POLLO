@@ -157,6 +157,9 @@ type GridResolution struct {
 // ParseResolution matches resolution strings from dataset catalogs to predefined GridResolutions.
 func ParseResolution(resStr string) (GridResolution, error) {
 	norm := strings.ToLower(strings.TrimSpace(resStr))
+	if norm == "" {
+		return GridResolution{}, errors.New("spatial resolution string cannot be empty")
+	}
 	switch {
 	case strings.Contains(norm, "0.1"):
 		return ResGPM01, nil
