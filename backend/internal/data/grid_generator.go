@@ -60,15 +60,24 @@ func computeSpatialValue(
 		// Precipitation: equatorial convective regime (peaks near equator, modulated by bimodal monsoon)
 		base := 130.0 - 8.0*distEquator + 0.8*relLon
 		season := 45.0*math.Sin(bimodalRad-0.8) + 18.0*math.Cos(mRad)
-		trend := 0.65 * yrFrac
-		// Extreme surge
-		extreme := 0.0
-		if year == 2019 && month >= 10 {
-			extreme = 50.0
-		} else if year == 2020 && month <= 5 {
-			extreme = 40.0
+		// Regional dipole: wetting in Lake Victoria / Great Lakes (relLon <= 5°), drying in arid Horn of Africa (relLon > 5°)
+		trendRate := 0.70 - 0.12*relLon
+		trend := trendRate * yrFrac
+		// Severe drought periods in the arid Horn of Africa
+		drought := 0.0
+		if relLon > 6.0 && ((year >= 2010 && year <= 2011) || (year >= 2021 && year <= 2022)) {
+			drought = -15.0
 		}
-		val := base + season + trend + noise*15.0 + extreme
+		// Extreme surge around Great Lakes
+		extreme := 0.0
+		if relLon <= 6.0 {
+			if year == 2019 && month >= 10 {
+				extreme = 50.0
+			} else if year == 2020 && month <= 5 {
+				extreme = 40.0
+			}
+		}
+		val := base + season + trend + noise*15.0 + extreme + drought
 		if val < 0.0 {
 			val = 0.0
 		}
