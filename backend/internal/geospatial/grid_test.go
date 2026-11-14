@@ -69,9 +69,9 @@ func TestNewGridSpec(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error for 9 km: %v", err)
 	}
-	// 7 deg / (9/111.32) = 7 / 0.080848 = ~86.58 -> 87 cells
-	if spec9km.Cols != 87 || spec9km.Rows != 87 {
-		t.Errorf("expected 87x87 cells at 9 km, got %dx%d", spec9km.Cols, spec9km.Rows)
+	// 7 deg snapped outward to global grid intervals yields 88 cols x 87 rows
+	if spec9km.Cols != 88 || spec9km.Rows != 87 {
+		t.Errorf("expected 88x87 cells at 9 km, got %dx%d", spec9km.Cols, spec9km.Rows)
 	}
 }
 

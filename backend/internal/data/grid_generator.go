@@ -30,23 +30,15 @@ func GenerateBenchmarkGrid(
 	mRad := 2.0 * math.Pi * float64(month-1) / 12.0
 	bimodalRad := 4.0 * math.Pi * float64(month-1) / 12.0
 
-	centerLon := (domainBBox.MinLon + domainBBox.MaxLon) / 2.0
-	centerLat := (domainBBox.MinLat + domainBBox.MaxLat) / 2.0
-
 	for r := 0; r < spec.Rows; r++ {
 		for c := 0; c < spec.Cols; c++ {
 			pt := spec.CellCenter(c, r)
 
-			// Spatial gradient based on relative position to center
-			dLon := pt.Lon - centerLon
-			dLat := pt.Lat - centerLat
-			distCenter := math.Sqrt(dLon*dLon + dLat*dLat)
-
-			// High-frequency deterministic spatial noise
+			// High-frequency deterministic spatial noise based strictly on geographic coordinates and time
 			spatialHash := math.Sin(pt.Lon*12.9898+pt.Lat*78.233+float64(stepIndex)*0.05) * 43758.5453
 			spatialNoise := (spatialHash - math.Floor(spatialHash)) - 0.5 // range [-0.5, 0.5]
 
-			val := computeSpatialValue(variableID, yrFrac, mRad, bimodalRad, dLon, dLat, distCenter, spatialNoise, year, month)
+			val := computeSpatialValue(variableID, yrFrac, mRad, bimodalRad, pt.Lon, pt.Lat, spatialNoise, year, month)
 			grid.Set(c, r, val)
 		}
 	}
@@ -57,13 +49,16 @@ func GenerateBenchmarkGrid(
 func computeSpatialValue(
 	variableID string,
 	yrFrac, mRad, bimodalRad float64,
-	dLon, dLat, distCenter, noise float64,
+	lon, lat, noise float64,
 	year, month int,
 ) float64 {
+	distEquator := math.Abs(lat)
+	relLon := lon - 30.0 // Relative to continental reference meridian 30.0°E
+
 	switch variableID {
 	case "GPM_PRECIP":
-		// Precipitation: bimodal seasonal cycle + higher precipitation near basin center
-		base := 120.0 - 5.0*distCenter + 4.0*dLat
+		// Precipitation: equatorial convective regime (peaks near equator, modulated by bimodal monsoon)
+		base := 130.0 - 8.0*distEquator + 0.8*relLon
 		season := 45.0*math.Sin(bimodalRad-0.8) + 18.0*math.Cos(mRad)
 		trend := 0.65 * yrFrac
 		// Extreme surge
@@ -80,22 +75,22 @@ func computeSpatialValue(
 		return val
 
 	case "MERRA2_T2M":
-		// Surface Air Temperature: lapse rate with latitude and distance
-		base := 24.0 - 0.4*dLat - 0.2*math.Abs(dLon)
+		// Surface Air Temperature: tropical warm pool with poleward lapse rate
+		base := 26.5 - 0.45*distEquator - 0.05*relLon
 		season := -1.8 * math.Sin(mRad+0.5)
 		trend := 0.028 * yrFrac
 		return base + season + trend + noise*0.4
 
 	case "MODIS_LST":
-		// Land Surface Temperature: stronger amplitude than air temperature
-		base := 30.5 - 0.6*dLat
+		// Land Surface Temperature: stronger amplitude and diurnal skin heating
+		base := 32.0 - 0.6*distEquator - 0.08*relLon
 		season := -3.0 * math.Sin(mRad+0.3)
 		trend := 0.032 * yrFrac
 		return base + season + trend + noise*0.6
 
 	case "SMAP_SOIL":
-		// Soil Moisture: peaks with rainfall
-		base := 0.28 + 0.02*math.Cos(distCenter)
+		// Soil Moisture: peaks with equatorial rainfall, lower in arid zones
+		base := 0.32 - 0.02*distEquator + 0.005*math.Cos(relLon*0.1)
 		season := 0.06 * math.Sin(bimodalRad-0.6)
 		trend := 0.0007 * yrFrac
 		val := base + season + trend + noise*0.025
@@ -105,15 +100,15 @@ func computeSpatialValue(
 		return val
 
 	case "MERRA2_QV2M":
-		// Specific Humidity
-		base := 14.5 + 0.3*dLon - 0.2*dLat
+		// Specific Humidity: high near equator, decreasing poleward
+		base := 15.2 - 0.35*distEquator + 0.04*relLon
 		season := 1.5 * math.Sin(mRad)
 		trend := 0.016 * yrFrac
 		return base + season + trend + noise*0.35
 
 	default:
 		// Default generic Earth observation field
-		return 20.0 + 5.0*math.Sin(mRad) + noise*2.0
+		return 20.0 - 0.3*distEquator + 5.0*math.Sin(mRad) + noise*2.0
 	}
 }
 

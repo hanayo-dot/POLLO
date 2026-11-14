@@ -65,6 +65,7 @@ type GridSpec struct {
 
 // NewGridSpec calculates grid dimensions based on a bounding box and resolution.
 // Grid coordinates are North-to-South (row 0 at MaxLat, row Rows-1 at MinLat).
+// Grid boundaries are snapped outward to global resolution steps ensuring consistent grid alignment.
 func NewGridSpec(bbox models.BoundingBox, res GridResolution) (GridSpec, error) {
 	if err := ValidateBoundingBox(bbox); err != nil {
 		return GridSpec{}, fmt.Errorf("invalid bounding box: %w", err)
@@ -73,11 +74,14 @@ func NewGridSpec(bbox models.BoundingBox, res GridResolution) (GridSpec, error) 
 		return GridSpec{}, fmt.Errorf("grid resolutions must be positive, got dx=%f, dy=%f", res.Dx, res.Dy)
 	}
 
-	dLon := bbox.MaxLon - bbox.MinLon
-	dLat := bbox.MaxLat - bbox.MinLat
+	// Snap bounding box outward to align with standard global grid cell boundaries (origin at 0, 0)
+	snappedMinLon := math.Floor(bbox.MinLon/res.Dx) * res.Dx
+	snappedMaxLon := math.Ceil(bbox.MaxLon/res.Dx) * res.Dx
+	snappedMaxLat := math.Ceil(bbox.MaxLat/res.Dy) * res.Dy
+	snappedMinLat := math.Floor(bbox.MinLat/res.Dy) * res.Dy
 
-	cols := int(math.Round(dLon / res.Dx))
-	rows := int(math.Round(dLat / res.Dy))
+	cols := int(math.Round((snappedMaxLon - snappedMinLon) / res.Dx))
+	rows := int(math.Round((snappedMaxLat - snappedMinLat) / res.Dy))
 
 	if cols < 1 {
 		cols = 1
@@ -86,12 +90,11 @@ func NewGridSpec(bbox models.BoundingBox, res GridResolution) (GridSpec, error) 
 		rows = 1
 	}
 
-	// Snap MaxLon and MinLat to exact grid steps for numerical stability
 	adjustedBBox := models.BoundingBox{
-		MinLon: bbox.MinLon,
-		MaxLon: bbox.MinLon + float64(cols)*res.Dx,
-		MaxLat: bbox.MaxLat,
-		MinLat: bbox.MaxLat - float64(rows)*res.Dy,
+		MinLon: snappedMinLon,
+		MaxLon: snappedMinLon + float64(cols)*res.Dx,
+		MaxLat: snappedMaxLat,
+		MinLat: snappedMaxLat - float64(rows)*res.Dy,
 	}
 
 	return GridSpec{

@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
@@ -108,6 +109,60 @@ func TestExtractMultiRegionSpatialTimeSeries(t *testing.T) {
 		s, ok := results[id]
 		if !ok || len(s) != 300 {
 			t.Errorf("region %s missing or incomplete series (len=%d)", id, len(s))
+		}
+	}
+}
+
+func TestSingleVsMultiRegionConsistency(t *testing.T) {
+	// Regression test for Finding 2: Single-region and multi-region extraction
+	// of the exact same geographical region must produce identical results.
+	targetRegion := "lake_victoria_basin"
+	allRegions := []string{"lake_victoria_basin", "horn_of_africa", "congo_basin", "sahel_belt"}
+	testVariables := []string{"MERRA2_T2M", "GPM_PRECIP"}
+
+	for _, vID := range testVariables {
+		for _, weighted := range []bool{false, true} {
+			mode := "unweighted"
+			if weighted {
+				mode = "weighted"
+			}
+			testName := fmt.Sprintf("%s_%s", vID, mode)
+			t.Run(testName, func(t *testing.T) {
+				// 1. Single region extraction
+				singleSeries, err := ExtractRegionSpatialTimeSeries(targetRegion, vID, geospatial.AggMean, weighted)
+				if err != nil {
+					t.Fatalf("single-region extraction failed for %s: %v", vID, err)
+				}
+
+				// 2. Multi-region extraction including the target region and wide continental union bbox
+				multiResults, err := ExtractMultiRegionSpatialTimeSeries(allRegions, vID, geospatial.AggMean, weighted)
+				if err != nil {
+					t.Fatalf("multi-region extraction failed for %s: %v", vID, err)
+				}
+
+				multiSeries, ok := multiResults[targetRegion]
+				if !ok {
+					t.Fatalf("multi-region results missing target region %s", targetRegion)
+				}
+
+				if len(singleSeries) != len(multiSeries) {
+					t.Fatalf("mismatched series length: single=%d, multi=%d", len(singleSeries), len(multiSeries))
+				}
+
+				// 3. Verify that every single observation across the 25-year time series matches
+				for i := range singleSeries {
+					diff := math.Abs(singleSeries[i].Value - multiSeries[i].Value)
+					const tolerance = 1e-3 // Machine precision for 3-decimal rounded TimeSeriesPoint values
+					if diff > tolerance {
+						t.Errorf("[%s] step %d (%s) discrepancy between single (%f) and multi (%f): diff=%f",
+							testName, i, singleSeries[i].Date, singleSeries[i].Value, multiSeries[i].Value, diff)
+					}
+				}
+
+				// Specifically check January 2000 (first step)
+				t.Logf("[%s] Jan 2000: single=%.3f, multi=%.3f (consistent: %v)",
+					testName, singleSeries[0].Value, multiSeries[0].Value, singleSeries[0].Value == multiSeries[0].Value)
+			})
 		}
 	}
 }
