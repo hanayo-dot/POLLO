@@ -17,6 +17,7 @@ import (
 )
 
 const methodNotAllowed = "Method not allowed"
+const tileCoordinatesMustBeIntegers = "Tile coordinates must be integers"
 
 // Router handles API endpoints
 type Router struct {
@@ -283,17 +284,17 @@ func (r *Router) handleGIBSTile(w http.ResponseWriter, req *http.Request) {
 
 	z, err := strconv.Atoi(zStr)
 	if err != nil {
-		http.Error(w, "Tile coordinates must be integers", http.StatusBadRequest)
+		http.Error(w, tileCoordinatesMustBeIntegers, http.StatusBadRequest)
 		return
 	}
 	x, err := strconv.Atoi(xStr)
 	if err != nil {
-		http.Error(w, "Tile coordinates must be integers", http.StatusBadRequest)
+		http.Error(w, tileCoordinatesMustBeIntegers, http.StatusBadRequest)
 		return
 	}
 	y, err := strconv.Atoi(yStr)
 	if err != nil {
-		http.Error(w, "Tile coordinates must be integers", http.StatusBadRequest)
+		http.Error(w, tileCoordinatesMustBeIntegers, http.StatusBadRequest)
 		return
 	}
 
