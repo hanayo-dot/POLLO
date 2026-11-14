@@ -10,8 +10,14 @@ import (
 	"github.com/pollo/backend/internal/models"
 )
 
-// GenerateBenchmarkTimeSeries produces 25 years (2000-2024, 300 months) of physical observations
+// GenerateBenchmarkTimeSeries produces 25 years (2000-2024, 300 months) of physical observations.
+// By default, it delegates to the 2D geospatial extraction pipeline with polygon masking and area weighting.
 func GenerateBenchmarkTimeSeries(regionID, variableID string) ([]models.TimeSeriesPoint, error) {
+	return ExtractRegionSpatialTimeSeries(regionID, variableID, geospatial.AggMean, true)
+}
+
+// GenerateBenchmarkTimeSeriesLegacy produces physical observations using the legacy 1D generator.
+func GenerateBenchmarkTimeSeriesLegacy(regionID, variableID string) ([]models.TimeSeriesPoint, error) {
 	reg, exists := GetRegion(regionID)
 	if !exists {
 		return nil, fmt.Errorf("region not found: %s", regionID)

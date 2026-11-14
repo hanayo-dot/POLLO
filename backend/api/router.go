@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/pollo/backend/internal/data"
 	"github.com/pollo/backend/internal/divergence"
 	"github.com/pollo/backend/internal/earthlink"
+	"github.com/pollo/backend/internal/geospatial"
 	"github.com/pollo/backend/internal/models"
 	"github.com/pollo/backend/internal/trendx"
 )
@@ -110,8 +112,43 @@ func (r *Router) handleTimeSeries(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	points, err := data.GenerateBenchmarkTimeSeries(regionID, variableID)
+	// Engine selection: default to spatial extraction (2D geospatial raster clipping & aggregation)
+	engineParam := strings.ToLower(query.Get("engine"))
+	useSpatial := r.cfg.UseSpatialEngine
+	if engineParam == "legacy" || engineParam == "1d" {
+		useSpatial = false
+	} else if engineParam == "spatial" || engineParam == "2d" {
+		useSpatial = true
+	}
+
+	aggType := geospatial.AggMean
+	if aggStr := query.Get("agg"); aggStr != "" {
+		var err error
+		aggType, err = geospatial.ParseAggregationType(aggStr)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("invalid aggregation type: %s", err.Error()), http.StatusBadRequest)
+			return
+		}
+	}
+
+	weighted := true
+	if wStr := query.Get("weighted"); wStr != "" {
+		weighted = strings.ToLower(wStr) == "true" || wStr == "1"
+	}
+
+	var points []models.TimeSeriesPoint
+	var err error
+	if useSpatial {
+		points, err = data.ExtractRegionSpatialTimeSeries(regionID, variableID, aggType, weighted)
+	} else {
+		points, err = data.GenerateBenchmarkTimeSeriesLegacy(regionID, variableID)
+	}
+
 	if err != nil {
+		if strings.Contains(err.Error(), "unsupported or invalid spatial resolution") {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -182,7 +219,13 @@ func (r *Router) handleTrendAnalyze(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	points, err := data.GenerateBenchmarkTimeSeries(body.RegionID, body.VariableID)
+	var points []models.TimeSeriesPoint
+	var err error
+	if r.cfg.UseSpatialEngine {
+		points, err = data.ExtractRegionSpatialTimeSeries(body.RegionID, body.VariableID, geospatial.AggMean, true)
+	} else {
+		points, err = data.GenerateBenchmarkTimeSeriesLegacy(body.RegionID, body.VariableID)
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
