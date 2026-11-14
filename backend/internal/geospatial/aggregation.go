@@ -318,7 +318,7 @@ type cellIterator struct {
 }
 
 func getCellIterator(grid *SpatialGrid, mask *SpatialMask) *cellIterator {
-	if mask != nil && len(mask.ValidIndices) > 0 {
+	if mask != nil {
 		return &cellIterator{
 			mask:    mask,
 			cols:    grid.Spec.Cols,

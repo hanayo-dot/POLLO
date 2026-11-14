@@ -267,3 +267,116 @@ func TestMaskedAggregation(t *testing.T) {
 		t.Errorf("expected masked mean 15.0, got %f", mean)
 	}
 }
+
+func TestEmptyMaskSemantics(t *testing.T) {
+	spec := GridSpec{
+		BBox: models.BoundingBox{MinLon: 0, MinLat: 0, MaxLon: 4, MaxLat: 4},
+		ResX: 1.0,
+		ResY: 1.0,
+		Cols: 4,
+		Rows: 4,
+	}
+	grid := NewSpatialGrid(spec, 0.0)
+	grid.Fill(50.0)
+	// Change one cell to 100.0
+	grid.Set(0, 0, 100.0)
+
+	// 1. Nil mask: must aggregate the entire grid
+	// 15 cells of 50.0 + 1 cell of 100.0 = 850.0 / 16 = 53.125
+	meanNil, err := AggregateMasked(grid, nil, AggMean, DefaultAggregationOptions())
+	if err != nil {
+		t.Fatalf("nil mask should aggregate entire grid, got err: %v", err)
+	}
+	if math.Abs(meanNil-53.125) > 1e-9 {
+		t.Errorf("expected nil mask mean 53.125, got %f", meanNil)
+	}
+
+	// 2. Non-empty mask selecting only cell (0, 0)
+	nonEmptyMask := &SpatialMask{
+		Spec:         spec,
+		Mask:         make([]bool, 16),
+		ValidIndices: []int{0},
+	}
+	nonEmptyMask.Mask[0] = true
+
+	meanNonEmpty, err := AggregateMasked(grid, nonEmptyMask, AggMean, DefaultAggregationOptions())
+	if err != nil {
+		t.Fatalf("non-empty mask failed: %v", err)
+	}
+	if math.Abs(meanNonEmpty-100.0) > 1e-9 {
+		t.Errorf("expected non-empty mask mean 100.0, got %f", meanNonEmpty)
+	}
+
+	// 3. Empty non-nil mask: must return error and NaN, NEVER fall back to full grid!
+	emptyMask := &SpatialMask{
+		Spec:         spec,
+		Mask:         make([]bool, 16),
+		ValidIndices: []int{},
+	}
+
+	// Mean with empty mask
+	meanEmpty, err := AggregateMasked(grid, emptyMask, AggMean, DefaultAggregationOptions())
+	if err == nil {
+		t.Errorf("expected error for empty mask mean, got nil (result=%f)", meanEmpty)
+	}
+	if !math.IsNaN(meanEmpty) {
+		t.Errorf("expected NaN for empty mask mean, got %f", meanEmpty)
+	}
+
+	// Median with empty mask
+	medEmpty, err := AggregateMasked(grid, emptyMask, AggMedian, DefaultAggregationOptions())
+	if err == nil {
+		t.Errorf("expected error for empty mask median, got nil (result=%f)", medEmpty)
+	}
+	if !math.IsNaN(medEmpty) {
+		t.Errorf("expected NaN for empty mask median, got %f", medEmpty)
+	}
+
+	// Variance with empty mask
+	varEmpty, err := AggregateMasked(grid, emptyMask, AggVariance, DefaultAggregationOptions())
+	if err == nil {
+		t.Errorf("expected error for empty mask variance, got nil (result=%f)", varEmpty)
+	}
+	if !math.IsNaN(varEmpty) {
+		t.Errorf("expected NaN for empty mask variance, got %f", varEmpty)
+	}
+}
+
+func TestTinyPolygonNoCells(t *testing.T) {
+	// Grid with 1° cells: cell centers at 0.5, 1.5, etc.
+	spec := GridSpec{
+		BBox: models.BoundingBox{MinLon: 0, MinLat: 0, MaxLon: 10, MaxLat: 10},
+		ResX: 1.0,
+		ResY: 1.0,
+		Cols: 10,
+		Rows: 10,
+	}
+	grid := NewSpatialGrid(spec, 0.0)
+	grid.Fill(42.0)
+
+	// Tiny polygon inside [0.1, 0.1] to [0.2, 0.2]: contains zero grid cell centers
+	tinyPoly, err := NewPolygon(Ring{
+		{Lon: 0.1, Lat: 0.1},
+		{Lon: 0.2, Lat: 0.1},
+		{Lon: 0.2, Lat: 0.2},
+		{Lon: 0.1, Lat: 0.2},
+		{Lon: 0.1, Lat: 0.1},
+	})
+	if err != nil {
+		t.Fatalf("failed to create tiny polygon: %v", err)
+	}
+
+	mask := ComputeSpatialMask(spec, tinyPoly)
+	if len(mask.ValidIndices) != 0 {
+		t.Fatalf("expected 0 valid indices for tiny polygon, got %d", len(mask.ValidIndices))
+	}
+
+	// Assert that AggregateMasked returns an error and NaN, NOT 42.0!
+	val, err := AggregateMasked(grid, mask, AggMean, DefaultAggregationOptions())
+	if err == nil {
+		t.Errorf("expected error for tiny polygon with 0 cells, got nil (val=%f)", val)
+	}
+	if !math.IsNaN(val) {
+		t.Errorf("expected NaN for tiny polygon with 0 cells, got %f", val)
+	}
+}
