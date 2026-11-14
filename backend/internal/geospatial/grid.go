@@ -204,6 +204,13 @@ func (g *SpatialGrid) ValidCount() int {
 	return count
 }
 
+// Fill sets all cells in the grid to the specified value.
+func (g *SpatialGrid) Fill(val float64) {
+	for i := range g.Data {
+		g.Data[i] = val
+	}
+}
+
 // ClipByBoundingBox extracts a subgrid covering the intersection with targetBBox.
 func (g *SpatialGrid) ClipByBoundingBox(targetBBox models.BoundingBox) (*SpatialGrid, error) {
 	interBBox, ok := BoundingBoxIntersection(g.Spec.BBox, targetBBox)
