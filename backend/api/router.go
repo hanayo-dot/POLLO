@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path/filepath"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -19,6 +20,9 @@ import (
 )
 
 var startTime = time.Now()
+
+const methodNotAllowed = "Method not allowed"
+const tileCoordinatesMustBeIntegers = "Tile coordinates must be integers"
 
 // Router handles API endpoints and middleware orchestration
 type Router struct {
@@ -112,11 +116,13 @@ func (r *Router) registerRoutes() {
 	r.mux.HandleFunc(prefix+"/trendx/analyze", r.handleTrendAnalyze)
 	r.mux.HandleFunc(prefix+"/divergence/analyze", r.handleDivergenceAnalyze)
 	r.mux.HandleFunc(prefix+"/gibs/layers", r.handleGIBSLayers)
+	r.mux.HandleFunc(prefix+"/gibs/tiles/{layer}/{date}/{z}/{x}/{y}", r.handleGIBSTile)
+	r.mux.HandleFunc(prefix+"/gibs/tiles/{layer}/{z}/{x}/{y}", r.handleGIBSTile)
 }
 
 func (r *Router) handleHealth(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
-		respondError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
 		return
 	}
 
@@ -137,7 +143,7 @@ func (r *Router) handleHealth(w http.ResponseWriter, req *http.Request) {
 
 func (r *Router) handleRegions(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
-		respondError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
 		return
 	}
 	respondJSON(w, http.StatusOK, data.AvailableRegions())
@@ -145,7 +151,7 @@ func (r *Router) handleRegions(w http.ResponseWriter, req *http.Request) {
 
 func (r *Router) handleDatasets(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
-		respondError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
 		return
 	}
 	respondJSON(w, http.StatusOK, data.AvailableVariables())
@@ -153,7 +159,7 @@ func (r *Router) handleDatasets(w http.ResponseWriter, req *http.Request) {
 
 func (r *Router) handleTimeSeries(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
-		respondError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
 		return
 	}
 
@@ -256,7 +262,7 @@ func (r *Router) handleTimeSeries(w http.ResponseWriter, req *http.Request) {
 
 func (r *Router) handleTrendAnalyze(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
-		respondError(w, http.StatusMethodNotAllowed, "Method not allowed. Use POST")
+		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
 		return
 	}
 
@@ -371,7 +377,7 @@ func (r *Router) handleTrendAnalyze(w http.ResponseWriter, req *http.Request) {
 
 func (r *Router) handleDivergenceAnalyze(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
-		respondError(w, http.StatusMethodNotAllowed, "Method not allowed. Use POST")
+		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
 		return
 	}
 
@@ -400,10 +406,72 @@ func (r *Router) handleDivergenceAnalyze(w http.ResponseWriter, req *http.Reques
 
 func (r *Router) handleGIBSLayers(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
-		respondError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
 		return
 	}
 	respondJSON(w, http.StatusOK, r.earthlink.GetAvailableGIBSLayers())
+}
+
+func (r *Router) handleGIBSTile(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
+		return
+	}
+
+	dateStr := req.PathValue("date")
+	if dateStr == "" {
+		dateStr = req.URL.Query().Get("date")
+	}
+
+	var date time.Time
+	if dateStr != "" {
+		var err error
+		date, err = time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			respondError(w, http.StatusBadRequest, "Date must use YYYY-MM-DD")
+			return
+		}
+	} else {
+		// Default to yesterday in UTC to account for GIBS processing latency
+		date = time.Now().UTC().AddDate(0, 0, -1)
+	}
+
+	zStr := req.PathValue("z")
+	xStr := req.PathValue("x")
+	yStr := strings.TrimSuffix(req.PathValue("y"), filepath.Ext(req.PathValue("y")))
+
+	z, err := strconv.Atoi(zStr)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, tileCoordinatesMustBeIntegers)
+		return
+	}
+	x, err := strconv.Atoi(xStr)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, tileCoordinatesMustBeIntegers)
+		return
+	}
+	y, err := strconv.Atoi(yStr)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, tileCoordinatesMustBeIntegers)
+		return
+	}
+
+	content, contentType, err := r.earthlink.GetTile(req.Context(), req.PathValue("layer"), date, z, x, y)
+	if err != nil {
+		status := http.StatusBadGateway
+		if strings.Contains(err.Error(), "unsupported GIBS layer") || strings.Contains(err.Error(), "outside the supported matrix") || strings.Contains(err.Error(), "date is required") {
+			status = http.StatusBadRequest
+		} else if strings.Contains(err.Error(), "GIBS returned HTTP 404") {
+			status = http.StatusNotFound
+		}
+		respondError(w, status, err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(content)
 }
 
 func filterDateRange(points []models.TimeSeriesPoint, start, end string) []models.TimeSeriesPoint {

@@ -59,8 +59,8 @@ type TrendResult struct {
 	Z              float64 `json:"z_statistic"`
 	PValue         float64 `json:"p_value"`
 	Tau            float64 `json:"kendall_tau"`
-	SensSlope      float64 `json:"sens_slope"`       // change per month
-	AnnualRate     float64 `json:"annual_rate"`      // change per year (SensSlope * 12)
+	SensSlope      float64 `json:"sens_slope"`  // change per month
+	AnnualRate     float64 `json:"annual_rate"` // change per year (SensSlope * 12)
 	Units          string  `json:"units"`
 	Significance   string  `json:"significance"`    // "significant", "marginal", "none"
 	TrendDirection string  `json:"trend_direction"` // "increasing", "decreasing", "neutral"
