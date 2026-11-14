@@ -15,6 +15,7 @@ import (
 	"github.com/pollo/backend/internal/data"
 	"github.com/pollo/backend/internal/divergence"
 	"github.com/pollo/backend/internal/earthlink"
+	"github.com/pollo/backend/internal/export"
 	"github.com/pollo/backend/internal/models"
 	"github.com/pollo/backend/internal/trendx"
 )
@@ -118,6 +119,8 @@ func (r *Router) registerRoutes() {
 	r.mux.HandleFunc(prefix+"/gibs/layers", r.handleGIBSLayers)
 	r.mux.HandleFunc(prefix+"/gibs/tiles/{layer}/{date}/{z}/{x}/{y}", r.handleGIBSTile)
 	r.mux.HandleFunc(prefix+"/gibs/tiles/{layer}/{z}/{x}/{y}", r.handleGIBSTile)
+	r.mux.HandleFunc(prefix+"/export/timeseries", r.handleExportTimeSeries)
+	r.mux.HandleFunc(prefix+"/export/geometries", r.handleExportGeometries)
 }
 
 func (r *Router) handleHealth(w http.ResponseWriter, req *http.Request) {
@@ -472,6 +475,171 @@ func (r *Router) handleGIBSTile(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=3600")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(content)
+}
+
+func (r *Router) handleExportTimeSeries(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
+		return
+	}
+
+	query := req.URL.Query()
+	regionID := query.Get("region")
+	if regionID == "" {
+		regionID = "lake_victoria_basin"
+	}
+	variableID := query.Get("variable")
+	if variableID == "" {
+		variableID = "GPM_PRECIP"
+	}
+	format := strings.ToLower(query.Get("format"))
+	if format == "" {
+		format = "csv"
+	}
+	deseasonalize := strings.ToLower(query.Get("deseasonalize")) != "false"
+	startDate := query.Get("start")
+	endDate := query.Get("end")
+
+	reg, okR := data.GetRegion(regionID)
+	if !okR {
+		respondError(w, http.StatusNotFound, fmt.Sprintf("Region '%s' not found", regionID))
+		return
+	}
+	v, okV := data.GetVariable(variableID)
+	if !okV {
+		respondError(w, http.StatusNotFound, fmt.Sprintf("Variable '%s' not found", variableID))
+		return
+	}
+
+	points, err := data.GenerateBenchmarkTimeSeries(regionID, variableID)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if startDate != "" || endDate != "" {
+		points = filterDateRange(points, startDate, endDate)
+	}
+	if len(points) == 0 {
+		respondError(w, http.StatusBadRequest, "No data available for the specified range")
+		return
+	}
+
+	var series []models.TimeSeriesPoint
+	var dataVals []float64
+
+	if deseasonalize {
+		deseas, _, err := trendx.DeseasonalizeTimeSeries(points)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, fmt.Sprintf("Deseasonalization failed: %v", err))
+			return
+		}
+		series = deseas
+		dataVals = make([]float64, len(deseas))
+		for i, p := range deseas {
+			dataVals[i] = p.Anomaly
+		}
+	} else {
+		series = points
+		dataVals = make([]float64, len(points))
+		for i, p := range points {
+			dataVals[i] = p.Value
+		}
+	}
+
+	var trendRes *models.TrendResult
+	if len(dataVals) >= 4 {
+		mk, err := trendx.MannKendall(dataVals)
+		if err == nil {
+			sens, _ := trendx.SensSlope(dataVals)
+			trendRes = &models.TrendResult{
+				VariableID:     variableID,
+				RegionID:       regionID,
+				DataPoints:     mk.N,
+				StartDate:      series[0].Date,
+				EndDate:        series[len(series)-1].Date,
+				S:              mk.S,
+				VarianceS:      mk.VarianceS,
+				Z:              mk.Z,
+				PValue:         mk.PValue,
+				Tau:            mk.Tau,
+				SensSlope:      sens.Slope,
+				AnnualRate:     sens.AnnualRate,
+				Units:          v.Units,
+				Significance:   mk.Significance,
+				TrendDirection: mk.TrendDirection,
+				Interpretation: fmt.Sprintf("%s exhibits a %s trend (Z = %+.2f, p = %.6f, Sen's slope = %+.4f %s/yr).",
+					reg.Name, mk.TrendDirection, mk.Z, mk.PValue, sens.AnnualRate, v.Units),
+			}
+		}
+	}
+
+	var body []byte
+	var contentType, filename string
+
+	if format == "json" {
+		body, err = export.BuildTimeSeriesJSON(reg, v, series, trendRes, deseasonalize)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, fmt.Sprintf("Export JSON failed: %v", err))
+			return
+		}
+		contentType = "application/json; charset=utf-8"
+		filename = fmt.Sprintf("pollo_timeseries_%s_%s.json", regionID, variableID)
+	} else {
+		body, err = export.BuildTimeSeriesCSV(reg, v, series, trendRes, deseasonalize)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, fmt.Sprintf("Export CSV failed: %v", err))
+			return
+		}
+		contentType = "text/csv; charset=utf-8"
+		filename = fmt.Sprintf("pollo_timeseries_%s_%s.csv", regionID, variableID)
+	}
+
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+	w.Header().Set("Cache-Control", "public, max-age=300")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(body)
+}
+
+func (r *Router) handleExportGeometries(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
+		return
+	}
+
+	regionID := strings.TrimSpace(req.URL.Query().Get("region"))
+	var body []byte
+	var filename string
+	var err error
+
+	if regionID == "" || regionID == "all" {
+		regions := data.AvailableRegions()
+		body, err = export.BuildGeometriesGeoJSON(regions)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, fmt.Sprintf("Export GeoJSON failed: %v", err))
+			return
+		}
+		filename = "pollo_geometries_all.geojson"
+	} else {
+		reg, ok := data.GetRegion(regionID)
+		if !ok {
+			respondError(w, http.StatusNotFound, fmt.Sprintf("Region '%s' not found", regionID))
+			return
+		}
+		body, err = export.BuildRegionGeoJSON(reg)
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, fmt.Sprintf("Export GeoJSON failed: %v", err))
+			return
+		}
+		filename = fmt.Sprintf("pollo_geometry_%s.geojson", regionID)
+	}
+
+	w.Header().Set("Content-Type", "application/geo+json; charset=utf-8")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(body)
 }
 
 func filterDateRange(points []models.TimeSeriesPoint, start, end string) []models.TimeSeriesPoint {
