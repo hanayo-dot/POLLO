@@ -1,0 +1,106 @@
+.page {
+  color: #173b38;
+}
+
+.page [class*="bg-[#"] {
+  background-color: rgb(255 255 255 / 55%);
+  backdrop-filter: blur(24px);
+}
+
+.page [class*="bg-blue-950"] {
+  background-color: rgb(20 83 75 / 10%);
+}
+
+.page [class*="bg-emerald-950"] {
+  background-color: rgb(16 185 129 / 10%);
+}
+
+.page [class*="bg-rose-950"] {
+  background-color: rgb(244 63 94 / 10%);
+}
+
+.page [class*="bg-slate-800"] {
+  background-color: rgb(255 255 255 / 55%);
+}
+
+.page [class*="bg-[#0d2146]"],
+.page [class*="bg-[#174e49]"],
+.page [class*="bg-blue-600"] {
+  background-color: #174e49;
+  color: #fff;
+}
+
+.page [class~="text-white"] {
+  color: #173b38;
+}
+
+.page [class~="text-slate-200"] {
+  color: #334155;
+}
+
+.page [class~="text-slate-300"] {
+  color: #475569;
+}
+
+.page [class~="text-slate-400"],
+.page [class~="text-slate-500"] {
+  color: #64748b;
+}
+
+.page [class~="text-blue-300"],
+.page [class~="text-blue-400"],
+.page [class~="text-sky-300"],
+.page [class~="text-sky-400"] {
+  color: #0f766e;
+}
+
+.page [class~="text-emerald-300"],
+.page [class~="text-emerald-400"] {
+  color: #047857;
+}
+
+.page [class~="text-amber-400"] {
+  color: #b45309;
+}
+
+.page [class~="text-rose-400"] {
+  color: #be123c;
+}
+
+.page [class*="border-slate-"] {
+  border-color: rgb(255 255 255 / 65%);
+}
+
+.page [class*="border-blue-"],
+.page [class*="border-sky-"] {
+  border-color: rgb(15 118 110 / 30%);
+}
+
+.page [class*="bg-[#0d2146]"][class~="text-white"],
+.page [class*="bg-[#174e49]"][class~="text-white"],
+.page [class*="bg-blue-600"][class~="text-white"] {
+  color: #fff;
+}
+
+.page [class*="hover:bg-slate-800"]:hover,
+.page [class*="hover:bg-[#"]:hover {
+  background-color: rgb(255 255 255 / 80%);
+}
+
+.page [class*="hover:bg-blue-500"]:hover {
+  background-color: #21665f;
+}
+
+.page [class*="placeholder-slate-500"]::placeholder {
+  color: #64748b;
+  opacity: 1;
+}
+
+.page [class*="bg-[#0d162b]"],
+.page [class*="bg-[#0e1628]"],
+.page [class*="bg-[#0b1222]"],
+.page [class*="bg-[#101a33]"],
+.page [class*="bg-[#0a0f1d]"] {
+  background-color: rgb(255 255 255 / 92%);
+  backdrop-filter: blur(24px);
+}

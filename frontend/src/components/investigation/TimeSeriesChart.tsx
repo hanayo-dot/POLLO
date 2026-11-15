@@ -227,7 +227,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
                   y1={y}
                   x2={width - padRight}
                   y2={y}
-                  stroke="#1e293b"
+                  stroke="#cbd5e1"
                   strokeWidth="1"
                   strokeDasharray="4 4"
                 />
@@ -235,7 +235,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
                   x={padLeft - 10}
                   y={y + 3.5}
                   textAnchor="end"
-                  fill="#94a3b8"
+                  fill="#64748b"
                   fontSize="11"
                   fontFamily="monospace"
                 >
@@ -254,7 +254,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
                   x={x}
                   y={height - 8}
                   textAnchor="middle"
-                  fill="#94a3b8"
+                  fill="#64748b"
                   fontSize="11"
                   fontFamily="sans-serif"
                 >
@@ -273,7 +273,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
             y1={trendStartY}
             x2={trendEndX}
             y2={trendEndY}
-            stroke="#ffffff"
+            stroke="#64748b"
             strokeWidth="2"
             strokeDasharray="5 5"
             strokeLinecap="round"
@@ -307,7 +307,7 @@ export const TimeSeriesChart: React.FC<TimeSeriesChartProps> = ({
                   cy={cy}
                   r={isHovered ? 5.5 : 3.5}
                   fill="#38bdf8"
-                  stroke="#0b101d"
+                  stroke="#ffffff"
                   strokeWidth="1.5"
                   className="transition-all duration-150"
                 />

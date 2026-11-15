@@ -28,6 +28,7 @@ import { RegionalComparisonBars } from "../../components/investigation/RegionalC
 import { NasaPartnerResourcesModal } from "../../components/research/NasaPartnerResourcesModal";
 import { GLOBAL_REGIONS, RegionData } from "../../services/globalRegionsData";
 import { useRouter } from "next/navigation";
+import styles from "./investigate.module.css";
 
 // Dynamically import InteractiveWorldMap to safely handle MapLibre WebGL in Next.js
 const InteractiveWorldMap = dynamic(
@@ -225,7 +226,22 @@ export default function InvestigationWorkspacePage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-white">
+    <div className={`${styles.page} relative isolate min-h-screen bg-[#070b14] text-white`}>
+      <video
+        className="fixed inset-0 z-0 h-full w-full object-cover opacity-85"
+        src="/videos/investigate-background.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+        tabIndex={-1}
+      />
+      <div
+        className="pointer-events-none fixed inset-0 z-[1] bg-gradient-to-br from-[#102d35]/35 via-[#1b4a50]/10 to-[#d7a77a]/20"
+        aria-hidden="true"
+      />
       {/* Execution Toast / Progress */}
       {isExecuting && (
         <div className="fixed top-20 right-8 z-50 bg-[#0f172a] border border-blue-500/60 text-white text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-fade-in">
@@ -235,41 +251,53 @@ export default function InvestigationWorkspacePage() {
       )}
 
       {/* Main Workspace Wrapper */}
-      <main className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="relative z-10 mx-auto w-full max-w-[1500px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
         {/* Workspace Top Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Investigation Workspace</h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Explore and analyse environmental trends across any part of the world using NASA scientific data
-            </p>
-          </div>
+        <div className="relative overflow-hidden rounded-[28px] border border-white/60 bg-white/45 p-6 shadow-[0_18px_60px_rgba(10,35,40,0.14)] backdrop-blur-2xl sm:p-8">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/25 blur-3xl" />
+          <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <span className="flex items-center gap-1.5 rounded-md border border-white/70 bg-white/55 px-2.5 py-1 font-mono text-xs font-medium text-teal-900 backdrop-blur-lg">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  NASA EOSDIS Observational Core
+                </span>
+                <span className="font-mono text-xs text-slate-700">2000–2025 Multi-Decadal Record</span>
+              </div>
+              <h1 className="text-2xl font-extrabold tracking-tight text-[#173b38] sm:text-3xl">
+                Investigation Workspace
+              </h1>
+              <p className="mt-1 max-w-2xl text-sm text-slate-700">
+                Explore and analyse environmental trends across any part of the world using NASA scientific data.
+              </p>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setIsResearchModalOpen(true)}
-              className="bg-[#101b33] hover:bg-[#162547] border border-sky-500/40 text-sky-300 rounded-xl px-3.5 py-2 text-xs font-semibold flex items-center gap-2 shadow-sm transition-all cursor-pointer"
-            >
-              <BookOpen className="w-3.5 h-3.5 text-sky-400" />
-              <span>NASA &amp; Partner Research Hub</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setIsResearchModalOpen(true)}
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/65 bg-white/55 px-3.5 py-2 text-xs font-semibold text-teal-800 shadow-sm backdrop-blur-lg transition-all hover:bg-white/75"
+              >
+                <BookOpen className="h-3.5 w-3.5 text-teal-700" />
+                <span>NASA &amp; Partner Research Hub</span>
+              </button>
 
-            <button
-              onClick={() => setIsNewInvestigationOpen(true)}
-              className="bg-[#0e172e] hover:bg-[#152244] border border-blue-500/40 text-blue-400 hover:text-blue-300 rounded-xl px-4 py-2 text-xs font-semibold flex items-center gap-2 shadow-sm transition-all cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New Investigation</span>
-            </button>
+              <button
+                onClick={() => setIsNewInvestigationOpen(true)}
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-teal-800/20 bg-[#174e49] px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-emerald-950/15 transition-all hover:bg-[#21665f]"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>New Investigation</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* 3-Column Layout: Left Controls, Center Interactive Map & Time Series, Right Trend & Insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Workspace controls, interactive map and charts, and supporting trend insights */}
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
           {/* ========================================================= */}
-          {/* LEFT COLUMN: Variables, Location, Date Range, Run Button   */}
+          {/* WORKSPACE CONTROLS: Variables, Location, Date Range, Run  */}
           {/* ========================================================= */}
-          <div className="lg:col-span-3 flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:col-span-12 xl:grid-cols-4">
             {/* Card 1: Variables */}
             <div className="bg-[#0b101d] border border-slate-800/80 rounded-2xl p-4 shadow-xl">
               <div className="flex items-center gap-2 mb-1">
@@ -454,7 +482,7 @@ export default function InvestigationWorkspacePage() {
           {/* ========================================================= */}
           {/* CENTER COLUMN: Interactive World Map & Time Series Chart  */}
           {/* ========================================================= */}
-          <div className="lg:col-span-6 flex flex-col gap-5 min-w-0">
+          <div className="flex min-w-0 flex-col gap-5 lg:col-span-8">
             {/* 1. Real Interactive World Map with Places & Zoom */}
             <InteractiveWorldMap
               variableId={selectedVariable}
@@ -540,7 +568,7 @@ export default function InvestigationWorkspacePage() {
           {/* ========================================================= */}
           {/* RIGHT COLUMN: Trend Analysis & Key Insights               */}
           {/* ========================================================= */}
-          <div className="lg:col-span-3 flex flex-col gap-5">
+          <div className="flex flex-col gap-5 lg:col-span-4">
             {/* Top Card: Trend Analysis */}
             <div className="bg-[#0b101d] border border-slate-800/80 rounded-2xl p-4 shadow-xl flex flex-col">
               <div className="flex items-center gap-2 mb-3">
