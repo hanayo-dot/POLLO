@@ -51,7 +51,24 @@ export default function TrendAnalysis() {
       if (!mounted) return;
       const observed = d.filter(v => ["ERA5_TEMP", "ERA5_RAIN", "ERA5_SOIL", "MODIS_NDVI"].includes(v.id));
       setRegions(r); setDatasets(observed);
-      const selection = readSelection(window.location.search);
+      const saved = sessionStorage.getItem("pollo_investigation");
+      const investigation = saved ? JSON.parse(saved) : null;
+
+      const variableMap: Record<string, string> = {
+        soil_moisture: "soil-moisture",
+        rainfall: "rainfall",
+        temperature: "temperature",
+        ndvi: "vegetation",
+      };
+
+      const selection = investigation
+        ? {
+          region: investigation.regionId,
+          variable: variableMap[investigation.variable] || investigation.variable,
+          start: `${investigation.dateRange.split("–")[0].trim()}-01`,
+          end: `${investigation.dateRange.split("–")[1].trim()}-12`,
+        }
+        : readSelection(window.location.search);
       const initialRegion = r.find(item => item.id === selection?.region) || r[0];
       setRegion(initialRegion?.id || "");
       const initialStart = selection?.start || "2000-01";
@@ -199,9 +216,9 @@ export default function TrendAnalysis() {
       <div id="trend-details" className="trend-details"><div className="trend-panel trend-detail-tabs">{[{ name: "Key Comparisons", icon: ChartColumn }, { name: "Methodology", icon: FlaskConical }, { name: "Full Results", icon: FileText }].map(({ name, icon: Icon }) => <button type="button" key={name} aria-expanded={section === name} aria-controls="trend-detail" onClick={() => setSection(section === name ? null : name)} className={`trend-detail-button ${section === name || (!section && name === "Key Comparisons") ? "active" : ""}`}><Icon size={22} />{name}{name === "Full Results" && <ChevronDown size={19} className={section === name ? "rotate-180" : ""} />}</button>)}</div>
         {section && <section id="trend-detail" className="trend-panel trend-detail-content"><h2>{section}</h2>
           {section === "Methodology" ? <div className="space-y-3"><p>The backend applies a two-sided Mann–Kendall test to the selected monthly measurements. Sen’s slope is the median of pairwise slopes; multiplying the monthly slope by 12 gives the annual rate. Significance is reported at p ≤ 0.05; p ≤ 0.10 is marginal.</p><p>The dashed line uses the backend Sen slope and a median-residual intercept. The chart preserves monthly measurements and original units. The slope uses elapsed calendar months, including gaps. Seasonal cycles and serial correlation can affect inference; seasonal adjustment is not applied here.</p><p>Temperature, rainfall and soil moisture use ERA5/ERA5-Land reanalysis. Vegetation uses quality-screened satellite NDVI. Results describe a reference grid cell inside the selected region, not a whole-region average.</p></div>
-          : section === "Data Sources" ? <div className="space-y-3"><p>The backend retrieves measurements from the provider below. Reanalysis combines observations with a physical model; MODIS is a satellite product.</p>{result?.source && <div className="space-y-2"><p><a href={result.source.url} target="_blank" rel="noreferrer" className="underline">{result.source.name}</a></p><p>{result.source.description}</p><p>Retrieved: {new Date(result.source.retrieved_at).toLocaleString()} · Missing months: {result.source.missing_months}</p></div>}{result && <dl className="grid gap-4 sm:grid-cols-2"><div><dt>Dataset</dt><dd>{result.variable.name}</dd></div><div><dt>Mission reference</dt><dd>{result.variable.mission}</dd></div><div><dt>Resolution</dt><dd>{result.variable.temporal_resolution} · {result.variable.spatial_resolution}</dd></div><div><dt>Units</dt><dd>{result.variable.units}</dd></div></dl>}</div>
-          : section === "Key Comparisons" ? comparison ? <div className="grid gap-4 sm:grid-cols-3"><p>Earlier-period mean<strong className="trend-comparison-value">{number(comparison.early)} {units}</strong></p><p>Later-period mean<strong className="trend-comparison-value">{number(comparison.late)} {units}</strong></p><p>Difference<strong className="trend-comparison-value">{number(comparison.late - comparison.early)} {units}</strong></p><p className="text-slate-400 sm:col-span-3">The first and second halves of the returned record, split at {comparison.split}. This descriptive comparison is not a separate significance test.</p></div> : <p>Run an analysis with at least two measurements to compare periods.</p>
-          : trend ? <dl className="grid gap-4 sm:grid-cols-2">{Object.entries(trend).map(([key, value]) => <div key={key} className="min-w-0 border-b border-slate-700/60 pb-2"><dt>{key.replaceAll("_", " ")}</dt><dd className="break-words">{typeof value === "number" ? key === "p_value" ? probability(value) : number(value) : value}</dd></div>)}</dl> : <p>Detailed statistics appear when the backend returns an analysis.</p>}
+            : section === "Data Sources" ? <div className="space-y-3"><p>The backend retrieves measurements from the provider below. Reanalysis combines observations with a physical model; MODIS is a satellite product.</p>{result?.source && <div className="space-y-2"><p><a href={result.source.url} target="_blank" rel="noreferrer" className="underline">{result.source.name}</a></p><p>{result.source.description}</p><p>Retrieved: {new Date(result.source.retrieved_at).toLocaleString()} · Missing months: {result.source.missing_months}</p></div>}{result && <dl className="grid gap-4 sm:grid-cols-2"><div><dt>Dataset</dt><dd>{result.variable.name}</dd></div><div><dt>Mission reference</dt><dd>{result.variable.mission}</dd></div><div><dt>Resolution</dt><dd>{result.variable.temporal_resolution} · {result.variable.spatial_resolution}</dd></div><div><dt>Units</dt><dd>{result.variable.units}</dd></div></dl>}</div>
+              : section === "Key Comparisons" ? comparison ? <div className="grid gap-4 sm:grid-cols-3"><p>Earlier-period mean<strong className="trend-comparison-value">{number(comparison.early)} {units}</strong></p><p>Later-period mean<strong className="trend-comparison-value">{number(comparison.late)} {units}</strong></p><p>Difference<strong className="trend-comparison-value">{number(comparison.late - comparison.early)} {units}</strong></p><p className="text-slate-400 sm:col-span-3">The first and second halves of the returned record, split at {comparison.split}. This descriptive comparison is not a separate significance test.</p></div> : <p>Run an analysis with at least two measurements to compare periods.</p>
+                : trend ? <dl className="grid gap-4 sm:grid-cols-2">{Object.entries(trend).map(([key, value]) => <div key={key} className="min-w-0 border-b border-slate-700/60 pb-2"><dt>{key.replaceAll("_", " ")}</dt><dd className="break-words">{typeof value === "number" ? key === "p_value" ? probability(value) : number(value) : value}</dd></div>)}</dl> : <p>Detailed statistics appear when the backend returns an analysis.</p>}
         </section>}
       </div>
       <p className="trend-source-note"><span />{result?.source?.name || "Historical data"} · reference point · monthly measurements · <button type="button" onClick={() => showSection("Data Sources")}>About the data</button></p>

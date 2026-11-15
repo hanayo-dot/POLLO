@@ -19,7 +19,7 @@ import {
   GitCompare,
   BookOpen,
 } from "lucide-react";
-import { InvestigationResult } from "../../types";
+import { InvestigationConfig, InvestigationResult } from "../../types";
 import { DEFAULT_DEMO_INVESTIGATION } from "../../services/catalogData";
 import { executeInvestigation } from "../../services/investigationApi";
 import { TimeSeriesEChart } from "../../components/visualization/TimeSeriesEChart";
@@ -31,6 +31,8 @@ import { MapLibreGeographicalMap } from "../../components/investigation/MapLibre
 import { DecadalAnomalyBars } from "../../components/visualization/DecadalAnomalyBars";
 import { RegionalComparisonBars } from "../../components/investigation/RegionalComparisonBars";
 import { NasaPartnerResourcesModal } from "../../components/research/NasaPartnerResourcesModal";
+import { GLOBAL_REGIONS } from "../../services/globalRegionsData";
+import { GEOGRAPHICAL_TARGETS } from "../../services/catalogData";
 
 export default function VisualizationPage() {
   const router = useRouter();
@@ -45,21 +47,74 @@ export default function VisualizationPage() {
       setIsLoading(true);
       // Check if sessionStorage has result from /investigate
       if (typeof window !== "undefined") {
-        const stored = sessionStorage.getItem("active_investigation_result");
-        if (stored) {
+        const savedSelection = sessionStorage.getItem("pollo_investigation");
+        if (savedSelection) {
           try {
-            setResult(JSON.parse(stored));
-            setIsLoading(false);
-            return;
-          } catch (e) {
-            console.error("Failed to parse stored result:", e);
+            const selection = JSON.parse(savedSelection);
+            console.log("Investigation settings:", JSON.stringify(selection, null, 2));
+            const [startYear, endYear] = selection.dateRange
+              .split("–")
+              .map((year: string) => year.trim());
+
+            console.log("Selected years:", startYear, endYear);
+          } catch (error) {
+            console.error("Failed to read investigation:", error);
           }
         }
       }
 
       // Default to initial demonstration investigation (Kenya GLDAS-2.1 Noah Soil Moisture)
       try {
-        const demoRes = await executeInvestigation(DEFAULT_DEMO_INVESTIGATION);
+        const saved = sessionStorage.getItem("pollo_investigation");
+        const selection = saved ? JSON.parse(saved) : null;
+
+        const variableMap = {
+          soil_moisture: ["soil_moisture", "GLDAS_NOAH025_M"],
+          rainfall: ["precipitation", "GPM_3IMERGM_V07"],
+          temperature: ["temperature", "MERRA2_T2M"],
+          ndvi: ["vegetation", "MODIS_MOD13C2_NDVI"],
+        } as const;
+
+        const selectedVariable =
+          selection?.variable as keyof typeof variableMap | undefined;
+
+        const [variableId, datasetId] =
+          variableMap[selectedVariable ?? "soil_moisture"] ??
+          variableMap.soil_moisture;
+
+        const region = GLOBAL_REGIONS.find(
+          (item) => item.id === selection?.regionId
+        );
+
+        const target =
+          GEOGRAPHICAL_TARGETS.find(
+            (item) => item.id === selection?.regionId
+          ) ??
+          GEOGRAPHICAL_TARGETS.find(
+            (item) => item.id === "kenya_nation"
+          )!;
+
+        const [startYear, endYear] = selection?.dateRange
+          ? selection.dateRange.split("–").map((year: string) => year.trim())
+          : ["2000", "2025"];
+
+        const config: InvestigationConfig = {
+          ...DEFAULT_DEMO_INVESTIGATION,
+          title: `${selection?.regionName ?? "Kenya"} Investigation`,
+          variableId,
+          datasetId,
+          geographicalTarget: {
+            ...target,
+            id: selection?.regionId ?? target.id,
+            name: region?.name ?? selection?.regionName ?? target.name,
+          },
+          dateRange: {
+            startDate: `${startYear}-01-01`,
+            endDate: `${endYear}-12-31`,
+          },
+        };
+
+        const demoRes = await executeInvestigation(config);
         setResult(demoRes);
       } catch (err) {
         console.error("Error executing default demonstration investigation:", err);
@@ -138,11 +193,10 @@ export default function VisualizationPage() {
               )}
 
               <span
-                className={`px-2.5 py-1 rounded-lg border font-semibold flex items-center gap-1.5 ${
-                  trend.significance === "significant"
-                    ? "bg-emerald-950/60 border-emerald-700 text-emerald-400"
-                    : "bg-space-800 border-space-700 text-gray-300"
-                }`}
+                className={`px-2.5 py-1 rounded-lg border font-semibold flex items-center gap-1.5 ${trend.significance === "significant"
+                  ? "bg-emerald-950/60 border-emerald-700 text-emerald-400"
+                  : "bg-space-800 border-space-700 text-gray-300"
+                  }`}
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
                 {trend.significance === "significant" ? "p ≤ 0.05 (Significant)" : "p > 0.05"}
@@ -165,6 +219,13 @@ export default function VisualizationPage() {
               className="px-4 py-2.5 rounded-xl bg-space-850 hover:bg-space-800 text-gray-300 hover:text-white border border-space-700 font-medium text-xs flex items-center gap-2 transition-all"
             >
               <span>Edit Investigation</span>
+            </Link>
+            <Link
+             href="/trend-analysis"
+              className="px-4 py-2.5 rounded-xl bg-space-850 hover:bg-space-800 text-gray-300 hover:text-white border border-space-700 font-medium text-xs flex items-center gap-2 transition-all"
+            >
+              <Activity className="w-4 h-4" />
+              <span>Trend Analysis</span>
             </Link>
 
             <button
@@ -231,10 +292,10 @@ export default function VisualizationPage() {
           config.variableId === "soil_moisture"
             ? "soil_moisture"
             : config.variableId === "precipitation"
-            ? "rainfall"
-            : config.variableId === "temperature"
-            ? "temperature"
-            : "ndvi"
+              ? "rainfall"
+              : config.variableId === "temperature"
+                ? "temperature"
+                : "ndvi"
         }
         variableName={datasetMetadata.shortName}
         variableUnit={datasetMetadata.units}

@@ -27,6 +27,7 @@ import { TrendSparkline } from "../../components/investigation/TrendSparkline";
 import { RegionalComparisonBars } from "../../components/investigation/RegionalComparisonBars";
 import { NasaPartnerResourcesModal } from "../../components/research/NasaPartnerResourcesModal";
 import { GLOBAL_REGIONS, RegionData } from "../../services/globalRegionsData";
+import { useRouter } from "next/navigation";
 
 // Dynamically import InteractiveWorldMap to safely handle MapLibre WebGL in Next.js
 const InteractiveWorldMap = dynamic(
@@ -48,6 +49,7 @@ const InteractiveWorldMap = dynamic(
 type VariableType = "soil_moisture" | "rainfall" | "temperature" | "ndvi";
 
 export default function InvestigationWorkspacePage() {
+  const router = useRouter();
   const [selectedVariable, setSelectedVariable] = useState<VariableType>("soil_moisture");
   const [activeRegion, setActiveRegion] = useState<RegionData>(GLOBAL_REGIONS[0]); // default to Kenya & East Africa
   const [isLocationOpen, setIsLocationOpen] = useState<boolean>(false);
@@ -67,14 +69,23 @@ export default function InvestigationWorkspacePage() {
   const currentVarConfig = activeRegion.variables[selectedVariable];
 
   const handleRunInvestigation = () => {
-    setIsExecuting(true);
-    setExecutionMessage(`Querying NASA EOSDIS & recalculating trend for ${activeRegion.name}...`);
-    setTimeout(() => {
-      setIsExecuting(false);
-      setExecutionMessage(null);
-    }, 600);
-  };
+    if (isExecuting) return;
 
+    setIsExecuting(true);
+    setExecutionMessage("Preparing investigation...");
+
+    sessionStorage.setItem(
+      "pollo_investigation",
+      JSON.stringify({
+        regionId: activeRegion.id,
+        regionName: activeRegion.name,
+        variable: selectedVariable,
+        dateRange,
+      })
+    );
+
+    router.push("/visualize");
+  };
   // Handle click anywhere on the world map
   const handleMapLocationClick = (coords: { lat: number; lon: number; label: string }) => {
     // Check if coordinates match an existing preset region
@@ -271,16 +282,14 @@ export default function InvestigationWorkspacePage() {
                 {/* 1. Soil Moisture */}
                 <button
                   onClick={() => setSelectedVariable("soil_moisture")}
-                  className={`w-full px-3.5 py-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${
-                    selectedVariable === "soil_moisture"
+                  className={`w-full px-3.5 py-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${selectedVariable === "soil_moisture"
                       ? "bg-[#0d2146] border border-blue-500/80 text-white shadow-md shadow-blue-500/10"
                       : "bg-[#131b2e]/60 border border-slate-800/70 text-slate-300 hover:border-slate-700 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <Droplets
-                    className={`w-4 h-4 flex-shrink-0 ${
-                      selectedVariable === "soil_moisture" ? "text-sky-400" : "text-slate-400"
-                    }`}
+                    className={`w-4 h-4 flex-shrink-0 ${selectedVariable === "soil_moisture" ? "text-sky-400" : "text-slate-400"
+                      }`}
                   />
                   <span className="text-xs font-medium">Soil Moisture</span>
                 </button>
@@ -288,16 +297,14 @@ export default function InvestigationWorkspacePage() {
                 {/* 2. Rainfall */}
                 <button
                   onClick={() => setSelectedVariable("rainfall")}
-                  className={`w-full px-3.5 py-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${
-                    selectedVariable === "rainfall"
+                  className={`w-full px-3.5 py-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${selectedVariable === "rainfall"
                       ? "bg-[#0d2146] border border-blue-500/80 text-white shadow-md shadow-blue-500/10"
                       : "bg-[#131b2e]/60 border border-slate-800/70 text-slate-300 hover:border-slate-700 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <CloudRain
-                    className={`w-4 h-4 flex-shrink-0 ${
-                      selectedVariable === "rainfall" ? "text-sky-400" : "text-slate-400"
-                    }`}
+                    className={`w-4 h-4 flex-shrink-0 ${selectedVariable === "rainfall" ? "text-sky-400" : "text-slate-400"
+                      }`}
                   />
                   <span className="text-xs font-medium">Rainfall</span>
                 </button>
@@ -305,16 +312,14 @@ export default function InvestigationWorkspacePage() {
                 {/* 3. Temperature */}
                 <button
                   onClick={() => setSelectedVariable("temperature")}
-                  className={`w-full px-3.5 py-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${
-                    selectedVariable === "temperature"
+                  className={`w-full px-3.5 py-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${selectedVariable === "temperature"
                       ? "bg-[#0d2146] border border-blue-500/80 text-white shadow-md shadow-blue-500/10"
                       : "bg-[#131b2e]/60 border border-slate-800/70 text-slate-300 hover:border-slate-700 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <Thermometer
-                    className={`w-4 h-4 flex-shrink-0 ${
-                      selectedVariable === "temperature" ? "text-rose-400" : "text-amber-500"
-                    }`}
+                    className={`w-4 h-4 flex-shrink-0 ${selectedVariable === "temperature" ? "text-rose-400" : "text-amber-500"
+                      }`}
                   />
                   <span className="text-xs font-medium">Temperature</span>
                 </button>
@@ -322,16 +327,14 @@ export default function InvestigationWorkspacePage() {
                 {/* 4. Vegetation Index (NDVI) */}
                 <button
                   onClick={() => setSelectedVariable("ndvi")}
-                  className={`w-full px-3.5 py-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${
-                    selectedVariable === "ndvi"
+                  className={`w-full px-3.5 py-2.5 rounded-xl text-left flex items-center gap-3 transition-all cursor-pointer ${selectedVariable === "ndvi"
                       ? "bg-[#0d2146] border border-blue-500/80 text-white shadow-md shadow-blue-500/10"
                       : "bg-[#131b2e]/60 border border-slate-800/70 text-slate-300 hover:border-slate-700 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <Leaf
-                    className={`w-4 h-4 flex-shrink-0 ${
-                      selectedVariable === "ndvi" ? "text-emerald-400" : "text-emerald-500"
-                    }`}
+                    className={`w-4 h-4 flex-shrink-0 ${selectedVariable === "ndvi" ? "text-emerald-400" : "text-emerald-500"
+                      }`}
                   />
                   <span className="text-xs font-medium">Vegetation Index (NDVI)</span>
                 </button>
@@ -360,9 +363,8 @@ export default function InvestigationWorkspacePage() {
                   </span>
                 </div>
                 <ChevronDown
-                  className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${
-                    isLocationOpen ? "rotate-180" : ""
-                  }`}
+                  className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${isLocationOpen ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
@@ -387,11 +389,10 @@ export default function InvestigationWorkspacePage() {
                         setActiveRegion(loc);
                         setIsLocationOpen(false);
                       }}
-                      className={`text-left px-2.5 py-2 text-xs rounded-lg transition-colors flex items-center gap-2 ${
-                        activeRegion.id === loc.id
+                      className={`text-left px-2.5 py-2 text-xs rounded-lg transition-colors flex items-center gap-2 ${activeRegion.id === loc.id
                           ? "bg-blue-600 text-white font-medium"
                           : "text-slate-300 hover:bg-slate-800"
-                      }`}
+                        }`}
                     >
                       <span className="text-sm">{loc.flag}</span>
                       <div className="flex flex-col truncate">
@@ -430,9 +431,8 @@ export default function InvestigationWorkspacePage() {
                         setDateRange(rng);
                         setIsDateOpen(false);
                       }}
-                      className={`text-left px-3 py-2 text-xs rounded-lg transition-colors ${
-                        dateRange === rng ? "bg-blue-600 text-white font-medium" : "text-slate-300 hover:bg-slate-800"
-                      }`}
+                      className={`text-left px-3 py-2 text-xs rounded-lg transition-colors ${dateRange === rng ? "bg-blue-600 text-white font-medium" : "text-slate-300 hover:bg-slate-800"
+                        }`}
                     >
                       {rng}
                     </button>
@@ -462,10 +462,10 @@ export default function InvestigationWorkspacePage() {
                 selectedVariable === "soil_moisture"
                   ? "Soil Moisture"
                   : selectedVariable === "rainfall"
-                  ? "Rainfall"
-                  : selectedVariable === "temperature"
-                  ? "Temperature"
-                  : "Vegetation Index"
+                    ? "Rainfall"
+                    : selectedVariable === "temperature"
+                      ? "Temperature"
+                      : "Vegetation Index"
               }
               variableUnit={currentVarConfig.unit}
               datasetName={currentVarConfig.dataset}
@@ -482,22 +482,20 @@ export default function InvestigationWorkspacePage() {
               <div className="flex items-center bg-[#101729] p-1 rounded-xl border border-slate-800 text-xs">
                 <button
                   onClick={() => setCenterBottomView("timeseries")}
-                  className={`px-3 py-1.5 rounded-lg transition-all font-medium flex items-center gap-1.5 cursor-pointer ${
-                    centerBottomView === "timeseries"
+                  className={`px-3 py-1.5 rounded-lg transition-all font-medium flex items-center gap-1.5 cursor-pointer ${centerBottomView === "timeseries"
                       ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 font-semibold"
                       : "text-slate-400 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <TrendingUp className="w-3.5 h-3.5" />
                   <span>Time Series Curve</span>
                 </button>
                 <button
                   onClick={() => setCenterBottomView("bars")}
-                  className={`px-3 py-1.5 rounded-lg transition-all font-medium flex items-center gap-1.5 cursor-pointer ${
-                    centerBottomView === "bars"
+                  className={`px-3 py-1.5 rounded-lg transition-all font-medium flex items-center gap-1.5 cursor-pointer ${centerBottomView === "bars"
                       ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 font-semibold"
                       : "text-slate-400 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <BarChart2 className="w-3.5 h-3.5" />
                   <span>Planetary Comparison Bars</span>
@@ -527,10 +525,10 @@ export default function InvestigationWorkspacePage() {
                   selectedVariable === "soil_moisture"
                     ? "Soil Moisture"
                     : selectedVariable === "rainfall"
-                    ? "Rainfall"
-                    : selectedVariable === "temperature"
-                    ? "Temperature"
-                    : "Vegetation Index"
+                      ? "Rainfall"
+                      : selectedVariable === "temperature"
+                        ? "Temperature"
+                        : "Vegetation Index"
                 }
                 variableUnit={currentVarConfig.unit}
                 activeRegionId={activeRegion.id}
@@ -741,11 +739,10 @@ export default function InvestigationWorkspacePage() {
                     <button
                       key={v.id}
                       onClick={() => setSelectedVariable(v.id as VariableType)}
-                      className={`px-3 py-2 text-xs rounded-xl border text-left transition-colors ${
-                        selectedVariable === v.id
+                      className={`px-3 py-2 text-xs rounded-xl border text-left transition-colors ${selectedVariable === v.id
                           ? "bg-blue-600 border-blue-500 text-white font-medium"
                           : "bg-[#131b2e] border-slate-800 text-slate-300 hover:border-slate-700"
-                      }`}
+                        }`}
                     >
                       {v.name}
                     </button>
