@@ -72,3 +72,31 @@ $$\Delta(R_A, R_B) = \operatorname{sgn}(\beta_A) \times \operatorname{sgn}(\beta
 
 Regions exhibit **Bipolar Divergence** when:
 $$\operatorname{sgn}(\beta_A) \ne \operatorname{sgn}(\beta_B) \quad \text{and} \quad p_A \le 0.05, \, p_B \le 0.05$$
+
+---
+
+## 5. Scientific Validation & Ground-Truth Verification
+
+To ensure publication-grade numerical rigor and statistical reliability, POLLO's TREND-X calculations are automatically benchmarked against peer-reviewed reference implementations:
+- **Gilbert (1987)** *Statistical Methods for Environmental Pollution Monitoring* (standard hydrological monitoring datasets, tied variance formulations).
+- **Hirsch, Slack & Smith (1982)** *Techniques of Trend Analysis for Monthly Water Quality Data* (Seasonal Kendall benchmarks, deseasonalization sensitivity validation).
+- **Python `pymannkendall` & `scipy.stats`** (`kendalltau`, `theilslopes`, `siegelslopes`).
+- **R `trend` package** (`mk.test`, `sens.slope`, `sea.ken`).
+
+### 5.1 Verification Test Matrix & Tolerances
+
+| Test Category | Benchmark Reference | Verification Metrics | Numerical Tolerance |
+|---|---|---|---|
+| **Mann-Kendall Hydrological Benchmarks** | Gilbert (1987) Tables 16.2 & 16.3; 15-pt WQ series | $S$, $\operatorname{Var}(S)$ with tie correction, $Z$, two-tailed $p$-value | $\le 10^{-6}$ |
+| **Seasonal Kendall & Deseasonalization** | Hirsch, Slack & Smith (1982) 36-month hydrological series | $S_{\text{seasonal}}$, $\operatorname{Var}(S_{\text{seasonal}})$, $Z$, $p$, anomaly isolation | $\le 10^{-6}$ |
+| **High Tie Frequency Datasets** | Synthetic series ($t_p > 5$, $t_p$ up to 10) | Tie correction term $\sum t_p(t_p-1)(2t_p+5)$, corrected $\operatorname{Var}(S)$ | Exact / $\le 10^{-6}$ |
+| **Regime Step Shifts** | Synthetic abrupt shift series (upward & downward) | Detection sensitivity, $p \le 0.01$, bounded Sen's slope | $\le 10^{-6}$ |
+| **Sen's Robust Slope Estimator** | `scipy.stats.theilslopes` & `scipy.stats.siegelslopes` | Linear rate $\beta$, breakdown point invariance with extreme outliers | $\le 10^{-6}$ |
+| **Divergence Detector Rigor** | African Great Lakes vs Horn of Africa GPM_PRECIP | Opposing sign verification, $p \le 0.05$, divergence metric $\Delta$ | $\le 10^{-6}$ |
+
+### 5.2 Automated CI Enforcement
+
+Every pull request and build executes:
+1. Automated Go test suite: `go test -v -run TestScientificValidation ./tests/...` in `backend/tests/scientific_validation_test.go`.
+2. Python ground-truth verification engine: `python3 scripts/verify_scientific_validation.py` cross-verifying reference implementations.
+
