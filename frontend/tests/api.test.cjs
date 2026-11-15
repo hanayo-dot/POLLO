@@ -52,3 +52,28 @@ test('handles non-JSON error responses', async () => {
   const api = service(async () => ({ ok: false, json: async () => { throw new Error('Invalid JSON'); } }));
   await assert.rejects(api.fetchTimeSeries('region', 'variable'), /Failed to fetch time series/);
 });
+
+test('strict catalog requests preserve backend data and forward cancellation', async () => {
+  const controller = new AbortController();
+  const response = [{ id: 'ERA5_RAIN' }];
+  const api = service(async (url, options) => {
+    assert.match(url, /\/datasets$/);
+    assert.equal(options.signal, controller.signal);
+    return { ok: true, json: async () => response };
+  });
+  assert.equal(await api.fetchDatasets({ strict: true, signal: controller.signal }), response);
+});
+
+test('strict catalog requests surface HTTP, network and malformed-response errors', async () => {
+  await assert.rejects(service(async () => ({ ok: false })).fetchDatasets({ strict: true }), /Failed to fetch datasets/);
+  await assert.rejects(service(async () => { throw new Error('Network unavailable'); }).fetchDatasets({ strict: true }), /Network unavailable/);
+  await assert.rejects(service(async () => ({ ok: true, json: async () => ({ error: 'not a catalog' }) })).fetchDatasets({ strict: true }), /catalog is invalid/);
+});
+
+test('default catalog fallback remains compatible, while cancellation is not swallowed', async () => {
+  const api = service(async () => { throw new Error('Offline'); });
+  assert.ok((await api.fetchDatasets()).some(dataset => dataset.id === 'GPM_PRECIP'));
+  const controller = new AbortController();
+  controller.abort();
+  await assert.rejects(api.fetchDatasets({ signal: controller.signal }), /Offline/);
+});

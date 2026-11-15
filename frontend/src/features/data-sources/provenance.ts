@@ -56,7 +56,10 @@ export function usedDatasets(catalog: DatasetVariable[], analysis: Analysis, sel
   const dataset = catalog.find(item => item.id === analysis.variable.id);
   if (!dataset) throw new Error("The investigation's dataset is missing from the backend catalog.");
   if (!dataset.supported_regions?.includes(selection.region)) throw new Error("The catalog does not support this dataset for the selected region.");
-  return analysis.series.some(point => Number.isFinite(point.value)) ? [dataset] : [];
+  const points = analysis.series.filter(point => Number.isFinite(point.value));
+  if (points.some(point => typeof point.date !== "string" || !/^\d{4}-(0[1-9]|1[0-2])(?:$|-)/.test(point.date) || point.date.slice(0, 7) < selection.start || point.date.slice(0, 7) > selection.end)) throw new Error("The returned measurements do not match the requested period.");
+  if (dataset.id.startsWith("ERA5_") && analysis.source.kind !== "reanalysis" || dataset.id === "MODIS_NDVI" && analysis.source.kind !== "satellite") throw new Error("The returned source type does not match the dataset.");
+  return points.length ? [dataset] : [];
 }
 
 export function safeSourceURL(value?: string): string | undefined {

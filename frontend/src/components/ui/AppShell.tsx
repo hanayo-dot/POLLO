@@ -2,7 +2,8 @@
 
 import { Navbar } from "./Navbar";
 
-export function AppShell({ children }: { children: React.ReactNode; fullWidth?: boolean }) {
+export function AppShell({ children, fullWidth = false }: { children: React.ReactNode; fullWidth?: boolean }) {
+  if (fullWidth) return <div className="min-h-screen">{children}</div>;
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />

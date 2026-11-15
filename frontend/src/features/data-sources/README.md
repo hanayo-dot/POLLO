@@ -1,4 +1,4 @@
-# Data Sources — implementation checkpoint
+# Data Sources
 
 This page uses TypeScript, React, Tailwind CSS and GSAP. Both Vite and Next.js
 have a `/data-sources` route. Trend Analysis and Insights pass the selected
@@ -24,12 +24,55 @@ library, explicitly separate from citations for the actual investigation.
 MODIS NDVI is not labelled as land cover classification. A version-specific
 NDVI DOI is not assigned because the backend does not report collection version.
 
-## Validation status at requested push
+## Validation
 
-The TypeScript/Vite production build passed. Full browser integration,
-responsive visual review and dedicated provenance tests are still pending.
-This is an implementation checkpoint, not a declaration that all Task 3
-acceptance criteria have been verified.
+The primary application runs on Next.js. The shared shell preserves the
+standalone full-width layout of Data Sources, Insights and Trend Analysis.
+The supplemental Vite entry loads its Next-specific dashboard shell lazily,
+so standalone analysis pages do not evaluate Next navigation code on startup.
+
+Validation covers:
+
+- Strict catalog fetching, cancellation, HTTP/network/schema errors and the
+  existing default fallback behavior for other API callers.
+- Only the actually observed dataset being labelled used; identity, region,
+  source type and measurement-period mismatches are rejected.
+- Benchmark and missing provenance rejection; empty and nonfinite measurements;
+  unsafe source URLs; explicit scientific distinctions between NDVI, land cover,
+  air temperature, land surface temperature and surface soil moisture.
+- Live ERA5 catalog and observational response integration, plus test-only UI
+  fixtures for the temperature, soil-moisture and MODIS NDVI presentations.
+- External-link opening, all documentation tabs, keyboard navigation, focus
+  wrapping, Escape, focus restoration and body-scroll restoration.
+- Layouts at 1670, 1024, 768, 390 and 320px; desktop/tablet/mobile screenshots;
+  citation-dialog overflow; GSAP cleanup and reduced motion.
+- Error/retry, loading, empty catalog, missing investigation, missing metadata,
+  no measurements and invalid-source states.
+- Trend Analysis ↔ Insights ↔ Data Sources selection preservation, and the
+  existing Insights interactions and downloaded report as a regression check.
+
+From `frontend`, run:
+
+```sh
+npm ci
+npm run build
+node --test tests/api.test.cjs tests/insights.test.cjs tests/data-sources.test.cjs
+```
+
+Start the frontend on port 3000 and backend on port 8080. With an installed
+Playwright package and Microsoft Edge, run:
+
+```sh
+node tests/data-sources.browser.cjs
+node tests/insights.browser.cjs
+```
+
+If Playwright is installed outside this project, set `PLAYWRIGHT_MODULE` to its
+absolute package directory. `INSIGHTS_ORIGIN` can override the frontend origin.
+Screenshots are written to the ignored `frontend/dist` directory. External-link
+navigation is intercepted only in the browser test to avoid depending on NASA
+site uptime; the initial dataset and observational response use the live backend.
+The additional Vite build is available as `npm run vite:build`.
 
 ## References checked during implementation
 
