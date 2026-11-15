@@ -6,6 +6,8 @@ export interface BoundingBox {
 }
 
 export interface Region {
+  latitude?: number;
+  longitude?: number;
   id: string;
   name: string;
   country: string;
@@ -13,6 +15,15 @@ export interface Region {
   bbox: BoundingBox;
   area_sq_km: number;
   description: string;
+}
+
+export interface DataSource {
+  name: string;
+  url: string;
+  kind: "reanalysis" | "satellite" | "benchmark";
+  description: string;
+  retrieved_at: string;
+  missing_months: number;
 }
 
 export interface DatasetVariable {

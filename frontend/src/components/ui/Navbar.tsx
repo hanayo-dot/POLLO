@@ -1,4 +1,5 @@
 import React from "react";
+
 import { Globe2, Satellite, Activity, ShieldCheck, Database } from "lucide-react";
 
 export const Navbar: React.FC = () => {
@@ -23,6 +24,7 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
+        <a href="/trend-analysis" className="rounded-full border border-cyan-400/50 bg-cyan-400/10 px-3 py-2 text-sm text-cyan-300 hover:bg-cyan-400/20">Trend Analysis</a>
         {/* Live Badges */}
         <div className="hidden md:flex items-center gap-4">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-space-850 border border-space-700 text-xs">
