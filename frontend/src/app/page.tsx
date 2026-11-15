@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Region, DatasetVariable, TimeSeriesPoint, TrendResult, DivergenceAnalysis } from "../types";
 import { fetchRegions, fetchDatasets, fetchTimeSeries, fetchDivergence } from "../services/api";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<"overview" | "trends" | "divergence">("overview");
@@ -87,7 +88,8 @@ export default function DashboardPage() {
               <span className="text-xs text-gray-400 font-mono">2000–2024 Record (25 Years)</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Planetary System Trend & Divergence Engine
+              Planetary System Trend & Divergence Engine 
+              <Link href="/components/LandingPage" className="text-blue-600 hover:text-blue-800 font-medium"> Go to Home</Link>
             </h1>
             <p className="text-sm text-gray-400 max-w-2xl mt-1">
               Multi-decadal non-parametric trend detection using Mann-Kendall and Sen's slope estimators on authentic

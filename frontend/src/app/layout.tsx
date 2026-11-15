@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Navbar } from "../components/ui/Navbar";
 
+
 export const metadata: Metadata = {
   title: "POLLO — Planetary Intelligence & Earth System Divergence",
   description: "Advanced non-parametric trend detection and climate divergence platform powered by authentic NASA Earth Science data.",
