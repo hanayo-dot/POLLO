@@ -1,6 +1,10 @@
 package data
 
-import "github.com/pollo/backend/internal/models"
+import (
+	"sync"
+
+	"github.com/pollo/backend/internal/models"
+)
 
 // AvailableRegions returns catalog of demonstration and reference regions
 func AvailableRegions() []models.Region {
@@ -64,9 +68,39 @@ func AvailableRegions() []models.Region {
 	}
 }
 
+var (
+	catalogVariablesMu sync.RWMutex
+	customVariables    []models.DatasetVariable
+)
+
+// RegisterVariable dynamically registers or updates a variable in the catalog.
+func RegisterVariable(v models.DatasetVariable) {
+	catalogVariablesMu.Lock()
+	defer catalogVariablesMu.Unlock()
+	for i, existing := range customVariables {
+		if existing.ID == v.ID {
+			customVariables[i] = v
+			return
+		}
+	}
+	customVariables = append(customVariables, v)
+}
+
+// UnregisterVariable removes a dynamically registered variable from the catalog.
+func UnregisterVariable(id string) {
+	catalogVariablesMu.Lock()
+	defer catalogVariablesMu.Unlock()
+	for i, existing := range customVariables {
+		if existing.ID == id {
+			customVariables = append(customVariables[:i], customVariables[i+1:]...)
+			return
+		}
+	}
+}
+
 // AvailableVariables returns catalog of NASA Earth observation datasets
 func AvailableVariables() []models.DatasetVariable {
-	return []models.DatasetVariable{
+	baseVariables := []models.DatasetVariable{
 		{
 			ID:                 "GPM_PRECIP",
 			Name:               "Precipitation Accumulation (IMERG V07)",
@@ -133,6 +167,15 @@ func AvailableVariables() []models.DatasetVariable {
 			SupportedRegions:   []string{"lake_victoria_basin", "horn_of_africa", "congo_basin", "sahel_belt"},
 		},
 	}
+
+	catalogVariablesMu.RLock()
+	defer catalogVariablesMu.RUnlock()
+	if len(customVariables) == 0 {
+		return baseVariables
+	}
+	result := make([]models.DatasetVariable, len(baseVariables), len(baseVariables)+len(customVariables))
+	copy(result, baseVariables)
+	return append(result, customVariables...)
 }
 
 // GetRegion finds a region by ID

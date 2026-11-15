@@ -17,6 +17,7 @@ type Config struct {
 	NASAGIBSEndpoint     string
 	CacheDir             string
 	EnableLocalBenchmark bool
+	UseSpatialEngine     bool
 }
 
 // Load reads configuration from environment variables or returns defaults
@@ -36,6 +37,7 @@ func Load() *Config {
 	gibsEndpoint := getEnv("NASA_GIBS_ENDPOINT", "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best")
 	cacheDir := getEnv("CACHE_DIR", "./data/cache")
 	enableBenchmark := getEnv("ENABLE_LOCAL_BENCHMARK", "true") == "true"
+	useSpatialEngine := getEnv("USE_SPATIAL_ENGINE", "true") == "true"
 
 	return &Config{
 		Port:                 port,
@@ -48,6 +50,7 @@ func Load() *Config {
 		NASAGIBSEndpoint:     gibsEndpoint,
 		CacheDir:             cacheDir,
 		EnableLocalBenchmark: enableBenchmark,
+		UseSpatialEngine:     useSpatialEngine,
 	}
 }
 

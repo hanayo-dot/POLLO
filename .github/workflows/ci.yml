@@ -26,6 +26,17 @@ jobs:
       - name: Run Backend Tests
         run: go test -v ./...
 
+      - name: Scientific Validation & Statistical Benchmarks
+        run: go test -v -run TestScientificValidation ./tests/...
+
+      - name: Set up Python for Reference Verification
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cross-Verify Statistical Ground Truth with Python Reference Engine
+        run: python3 ../scripts/verify_scientific_validation.py
+
       - name: Compile Go Binary
         run: go build -v -o bin/server main.go
 
