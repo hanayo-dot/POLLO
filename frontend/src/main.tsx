@@ -5,7 +5,9 @@ import { AppShell } from "./components/ui/AppShell";
 import "./app/globals.css";
 const Dashboard = lazy(() => import("./app/page"));
 const Insights = lazy(() => import("./features/insights/Insights"));
+const DataSources = lazy(() => import("./features/data-sources/DataSources"));
 const page = window.location.pathname === "/dashboard"
   ? <AppShell><Suspense fallback={<p>Loading dashboard…</p>}><Dashboard /></Suspense></AppShell>
-  : window.location.pathname === "/insights" ? <Suspense fallback={<p role="status">Loading insights…</p>}><Insights /></Suspense> : <TrendAnalysis />;
+  : window.location.pathname === "/insights" ? <Suspense fallback={<p role="status">Loading insights…</p>}><Insights /></Suspense>
+  : window.location.pathname === "/data-sources" ? <Suspense fallback={<p role="status">Loading data sources…</p>}><DataSources /></Suspense> : <TrendAnalysis />;
 createRoot(document.getElementById("root")!).render(page);

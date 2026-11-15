@@ -60,12 +60,15 @@ export async function fetchRegions(): Promise<Region[]> {
   }
 }
 
-export async function fetchDatasets(): Promise<DatasetVariable[]> {
+export async function fetchDatasets(options?: { strict?: boolean; signal?: AbortSignal }): Promise<DatasetVariable[]> {
   try {
-    const res = await fetch(`${API_BASE}/datasets`);
+    const res = await fetch(`${API_BASE}/datasets`, { signal: options?.signal });
     if (!res.ok) throw new Error("Failed to fetch datasets");
-    return await res.json();
+    const datasets = await res.json();
+    if (!Array.isArray(datasets)) throw new Error("The dataset catalog is invalid.");
+    return datasets;
   } catch (err) {
+    if (options?.strict || options?.signal?.aborted) throw err;
     return [
       {
         id: "GPM_PRECIP",

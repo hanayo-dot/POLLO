@@ -147,7 +147,7 @@ export default function TrendAnalysis() {
         <a href="#trend-chart"><ChartColumn /><span>Visualise</span></a>
         <a href="#trend-chart" className="active" aria-current="page"><ChartLine /><span>Trend Analysis</span></a>
         <a aria-label="Insights" href={result && resultSelection ? `/insights?${new URLSearchParams(resultSelection)}` : "/insights"}><Lightbulb /><span>Insights</span></a>
-        <button type="button" onClick={() => showSection("Data Sources")}><Database /><span>Data Sources</span></button>
+        <a aria-label="Data Sources" href={result && resultSelection ? `/data-sources?${new URLSearchParams(resultSelection)}` : "/data-sources"}><Database /><span>Data Sources</span></a>
       </div>
       <div className="trend-nav-actions">
         <label className="trend-location"><MapPin size={21} /><select aria-label="Region" value={region} disabled={catalogLoading || loading} onChange={e => {
