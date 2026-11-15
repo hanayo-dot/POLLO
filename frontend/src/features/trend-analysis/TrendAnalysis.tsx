@@ -11,6 +11,8 @@ import type { DatasetVariable, Region } from "../../types";
 import { VariableIllustration } from "./VariableIllustration";
 import { variableKind, variableLabel, variableOptions } from "./variables";
 import "./trend-analysis.css";
+import { readSelection } from "../insights/findings";
+import type { Selection } from "../insights/findings";
 
 const ReactECharts = lazy(() => import("./TrendChart"));
 type Result = Awaited<ReturnType<typeof fetchTimeSeries>>;
@@ -28,6 +30,7 @@ export default function TrendAnalysis() {
   const [start, setStart] = useState("2000-01");
   const [end, setEnd] = useState("2024-12");
   const [result, setResult] = useState<Result | null>(null);
+  const [resultSelection, setResultSelection] = useState<Selection | null>(null);
   const [loading, setLoading] = useState(false);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [error, setError] = useState("");
@@ -48,17 +51,22 @@ export default function TrendAnalysis() {
       if (!mounted) return;
       const observed = d.filter(v => ["ERA5_TEMP", "ERA5_RAIN", "ERA5_SOIL", "MODIS_NDVI"].includes(v.id));
       setRegions(r); setDatasets(observed);
-      setRegion(r[0]?.id || "");
-      const initialOptions = variableOptions(observed, r[0]?.id || "");
-      const initialVariable = (initialOptions.find(v => v.kind === "rainfall" && v.dataset) || initialOptions.find(v => v.dataset))?.id || "rainfall";
+      const selection = readSelection(window.location.search);
+      const initialRegion = r.find(item => item.id === selection?.region) || r[0];
+      setRegion(initialRegion?.id || "");
+      const initialStart = selection?.start || "2000-01";
+      const initialEnd = selection?.end || "2024-12";
+      setStart(initialStart); setEnd(initialEnd);
+      const initialOptions = variableOptions(observed, initialRegion?.id || "");
+      const initialVariable = initialOptions.find(v => v.id === selection?.variable && v.dataset)?.id || (initialOptions.find(v => v.kind === "rainfall" && v.dataset) || initialOptions.find(v => v.dataset))?.id || "rainfall";
       setVariable(initialVariable);
-      if (!r[0] || !initialOptions.find(v => v.id === initialVariable)?.dataset) return;
+      if (!initialRegion || !initialOptions.find(v => v.id === initialVariable)?.dataset) return;
       const controller = new AbortController();
       request.current = controller;
       setLoading(true);
       try {
-        const data = await fetchTimeSeries(r[0].id, initialVariable, false, { start: "2000-01", end: "2024-12", signal: controller.signal });
-        if (mounted) setResult({ ...data, series: (data.series || []).filter(p => Number.isFinite(p.value)).sort((a, b) => a.date.localeCompare(b.date)) });
+        const data = await fetchTimeSeries(initialRegion.id, initialVariable, false, { start: initialStart, end: initialEnd, signal: controller.signal });
+        if (mounted) { setResult({ ...data, series: (data.series || []).filter(p => Number.isFinite(p.value)).sort((a, b) => a.date.localeCompare(b.date)) }); setResultSelection({ region: initialRegion.id, variable: initialVariable, start: initialStart, end: initialEnd }); }
       } catch (err) {
         if (mounted && !controller.signal.aborted) setError(err instanceof Error ? err.message : "Could not load the initial analysis.");
       } finally { if (mounted) setLoading(false); }
@@ -80,7 +88,7 @@ export default function TrendAnalysis() {
     setLoading(true); setError(""); setResult(null);
     try {
       const data = await fetchTimeSeries(region, variable, false, { start, end, signal: controller.signal });
-      if (!controller.signal.aborted) setResult({ ...data, series: (data.series || []).filter(p => Number.isFinite(p.value)).sort((a, b) => a.date.localeCompare(b.date)) });
+      if (!controller.signal.aborted) { setResult({ ...data, series: (data.series || []).filter(p => Number.isFinite(p.value)).sort((a, b) => a.date.localeCompare(b.date)) }); setResultSelection({ region, variable, start, end }); }
     } catch (err) {
       if (!controller.signal.aborted) setError(err instanceof Error ? err.message : "Analysis failed. Please try again.");
     } finally { if (!controller.signal.aborted) setLoading(false); }
@@ -138,7 +146,7 @@ export default function TrendAnalysis() {
         <a href="#analysis-controls"><Search /><span>Investigate</span></a>
         <a href="#trend-chart"><ChartColumn /><span>Visualise</span></a>
         <a href="#trend-chart" className="active" aria-current="page"><ChartLine /><span>Trend Analysis</span></a>
-        <a href="#big-picture"><Lightbulb /><span>Insights</span></a>
+        <a aria-label="Insights" href={result && resultSelection ? `/insights?${new URLSearchParams(resultSelection)}` : "/insights"}><Lightbulb /><span>Insights</span></a>
         <button type="button" onClick={() => showSection("Data Sources")}><Database /><span>Data Sources</span></button>
       </div>
       <div className="trend-nav-actions">

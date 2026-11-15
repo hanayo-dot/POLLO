@@ -1,10 +1,9 @@
 "use client";
 
-
 import { Navbar } from "./Navbar";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
-  if (window.location.pathname === "/trend-analysis") return <main className="min-h-screen">{children}</main>;
+export function AppShell({ children, fullWidth = false }: { children: React.ReactNode; fullWidth?: boolean }) {
+  if (fullWidth) return <div className="min-h-screen">{children}</div>;
   return <>
     <Navbar />
     <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
