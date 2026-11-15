@@ -16,6 +16,7 @@ import (
 	"github.com/pollo/backend/internal/divergence"
 	"github.com/pollo/backend/internal/earthlink"
 	"github.com/pollo/backend/internal/export"
+	"github.com/pollo/backend/internal/geospatial"
 	"github.com/pollo/backend/internal/models"
 	"github.com/pollo/backend/internal/trendx"
 )
@@ -204,7 +205,7 @@ func (r *Router) handleTimeSeries(w http.ResponseWriter, req *http.Request) {
 		var err error
 		aggType, err = geospatial.ParseAggregationType(aggStr)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("invalid aggregation type: %s", err.Error()), http.StatusBadRequest)
+			respondError(w, http.StatusBadRequest, fmt.Sprintf("invalid aggregation type: %s", err.Error()))
 			return
 		}
 	}
@@ -223,6 +224,10 @@ func (r *Router) handleTimeSeries(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if err != nil {
+		if strings.Contains(err.Error(), "unsupported or invalid spatial resolution") {
+			respondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
