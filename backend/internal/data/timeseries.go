@@ -5,11 +5,19 @@ import (
 	"math"
 	"time"
 
+	"github.com/pollo/backend/internal/data/catalog"
+	"github.com/pollo/backend/internal/geospatial"
 	"github.com/pollo/backend/internal/models"
 )
 
-// GenerateBenchmarkTimeSeries produces 25 years (2000-2024, 300 months) of physical observations
+// GenerateBenchmarkTimeSeries produces 25 years (2000-2024, 300 months) of physical observations.
+// By default, it delegates to the 2D geospatial extraction pipeline with polygon masking and area weighting.
 func GenerateBenchmarkTimeSeries(regionID, variableID string) ([]models.TimeSeriesPoint, error) {
+	return ExtractRegionSpatialTimeSeries(regionID, variableID, geospatial.AggMean, true)
+}
+
+// GenerateBenchmarkTimeSeriesLegacy produces physical observations using the legacy 1D generator.
+func GenerateBenchmarkTimeSeriesLegacy(regionID, variableID string) ([]models.TimeSeriesPoint, error) {
 	reg, exists := GetRegion(regionID)
 	if !exists {
 		return nil, fmt.Errorf("region not found: %s", regionID)
@@ -249,4 +257,99 @@ func calculatePhysicalValue(regionID, variableID string, year, month, stepIndex 
 
 	// Default fallback
 	return 20.0 + 5.0*math.Sin(mRad) + pseudoNoise*2.0
+}
+
+// ExtractRegionSpatialTimeSeries produces 25 years (2000-2024, 300 months) of time-series observations
+// by performing bounding box clipping, polygon masking, and spatial aggregation over 2D spatial raster grids.
+func ExtractRegionSpatialTimeSeries(
+	regionID, variableID string,
+	aggType geospatial.AggregationType,
+	weighted bool,
+) ([]models.TimeSeriesPoint, error) {
+	reg, exists := GetRegion(regionID)
+	if !exists {
+		return nil, fmt.Errorf("region not found: %s", regionID)
+	}
+	v, exists := GetVariable(variableID)
+	if !exists {
+		return nil, fmt.Errorf("variable not found: %s", variableID)
+	}
+
+	poly, exists := catalog.GetRegionPolygon(regionID)
+	if !exists {
+		ring := geospatial.Ring{
+			{Lon: reg.BBox.MinLon, Lat: reg.BBox.MinLat},
+			{Lon: reg.BBox.MaxLon, Lat: reg.BBox.MinLat},
+			{Lon: reg.BBox.MaxLon, Lat: reg.BBox.MaxLat},
+			{Lon: reg.BBox.MinLon, Lat: reg.BBox.MaxLat},
+			{Lon: reg.BBox.MinLon, Lat: reg.BBox.MinLat},
+		}
+		var err error
+		poly, err = geospatial.NewPolygon(ring)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create fallback polygon: %w", err)
+		}
+	}
+
+	res, err := geospatial.ParseResolution(v.SpatialResolution)
+	if err != nil {
+		return nil, fmt.Errorf("unsupported or invalid spatial resolution %q for variable %s: %w", v.SpatialResolution, v.ID, err)
+	}
+
+	stream, err := NewBenchmarkGridStream(v.ID, 2000, 2024, reg.BBox, res)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create benchmark grid stream: %w", err)
+	}
+
+	opts := geospatial.AggregationOptions{Weighted: weighted, SampleVariance: true}
+	return geospatial.ExtractStreamTimeSeries(stream, poly, aggType, opts)
+}
+
+// ExtractMultiRegionSpatialTimeSeries executes high-performance streaming extraction across multiple regions simultaneously.
+func ExtractMultiRegionSpatialTimeSeries(
+	regionIDs []string,
+	variableID string,
+	aggType geospatial.AggregationType,
+	weighted bool,
+) (map[string][]models.TimeSeriesPoint, error) {
+	v, exists := GetVariable(variableID)
+	if !exists {
+		return nil, fmt.Errorf("variable not found: %s", variableID)
+	}
+
+	res, err := geospatial.ParseResolution(v.SpatialResolution)
+	if err != nil {
+		return nil, fmt.Errorf("unsupported or invalid spatial resolution %q for variable %s: %w", v.SpatialResolution, v.ID, err)
+	}
+
+	targets := make([]geospatial.RegionTarget, 0, len(regionIDs))
+	var unionBBox models.BoundingBox
+	hasBBox := false
+
+	for _, id := range regionIDs {
+		reg, exists := GetRegion(id)
+		if !exists {
+			return nil, fmt.Errorf("region not found: %s", id)
+		}
+		target, err := catalog.RegionToGeospatialTarget(*reg)
+		if err != nil {
+			return nil, err
+		}
+		targets = append(targets, target)
+
+		if !hasBBox {
+			unionBBox = reg.BBox
+			hasBBox = true
+		} else {
+			unionBBox = geospatial.BoundingBoxUnion(unionBBox, reg.BBox)
+		}
+	}
+
+	stream, err := NewBenchmarkGridStream(v.ID, 2000, 2024, unionBBox, res)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := geospatial.AggregationOptions{Weighted: weighted, SampleVariance: true}
+	return geospatial.ExtractStreamMultiRegionTimeSeries(stream, targets, aggType, opts)
 }
