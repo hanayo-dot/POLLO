@@ -2,13 +2,14 @@
 
 import { Navbar } from "./Navbar";
 
-export function AppShell({ children, fullWidth = false }: { children: React.ReactNode; fullWidth?: boolean }) {
-  if (fullWidth) return <div className="min-h-screen">{children}</div>;
-  return <>
-    <Navbar />
-    <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
-    <footer className="border-t border-space-800 bg-space-900/60 py-6 text-center text-xs text-gray-500">
-      <p>© 2026 POLLO Research Initiative — Powered by NASA EOSDIS, GMAO MERRA-2, GPM IMERG, &amp; MODIS.</p>
-    </footer>
-  </>;
+export function AppShell({ children }: { children: React.ReactNode; fullWidth?: boolean }) {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-1 w-full flex flex-col">{children}</main>
+      <footer className="border-t border-[#1c2a47]/70 bg-[#070d1e]/90 py-6 text-center text-xs text-gray-500">
+        <p>© 2026 POLLO Research Initiative — Powered by NASA EOSDIS, GMAO MERRA-2, GPM IMERG, &amp; MODIS.</p>
+      </footer>
+    </div>
+  );
 }

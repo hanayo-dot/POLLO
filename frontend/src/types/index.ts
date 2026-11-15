@@ -89,3 +89,5 @@ export interface GIBSLayer {
   tile_matrix_set: string;
   description: string;
 }
+
+export * from "./investigation";
