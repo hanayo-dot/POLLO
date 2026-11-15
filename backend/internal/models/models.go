@@ -59,8 +59,8 @@ type TrendResult struct {
 	Z              float64 `json:"z_statistic"`
 	PValue         float64 `json:"p_value"`
 	Tau            float64 `json:"kendall_tau"`
-	SensSlope      float64 `json:"sens_slope"`       // change per month
-	AnnualRate     float64 `json:"annual_rate"`      // change per year (SensSlope * 12)
+	SensSlope      float64 `json:"sens_slope"`  // change per month
+	AnnualRate     float64 `json:"annual_rate"` // change per year (SensSlope * 12)
 	Units          string  `json:"units"`
 	Significance   string  `json:"significance"`    // "significant", "marginal", "none"
 	TrendDirection string  `json:"trend_direction"` // "increasing", "decreasing", "neutral"
@@ -82,11 +82,13 @@ type DivergenceAnalysis struct {
 
 // AnalysisRequest input payload for trend detection
 type AnalysisRequest struct {
-	RegionID       string `json:"region_id"`
-	VariableID     string `json:"variable_id"`
-	StartDate      string `json:"start_date"` // YYYY-MM (optional)
-	EndDate        string `json:"end_date"`   // YYYY-MM (optional)
-	Deseasonalize  bool   `json:"deseasonalize"`
+	RegionID      string    `json:"region_id,omitempty"`
+	VariableID    string    `json:"variable_id,omitempty"`
+	StartDate     string    `json:"start_date,omitempty"` // YYYY-MM (optional)
+	EndDate       string    `json:"end_date,omitempty"`   // YYYY-MM (optional)
+	Deseasonalize bool      `json:"deseasonalize"`
+	CustomSeries  []float64 `json:"custom_series,omitempty"` // Optional raw time-series values
+	Units         string    `json:"units,omitempty"`
 }
 
 // DivergenceRequest input payload for regional comparison
