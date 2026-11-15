@@ -12,6 +12,8 @@ type BoundingBox struct {
 
 // Region represents a geographical region for monitoring
 type Region struct {
+	Latitude      *float64    `json:"latitude,omitempty"`
+	Longitude     *float64    `json:"longitude,omitempty"`
 	ID            string      `json:"id"`
 	Name          string      `json:"name"`
 	Country       string      `json:"country"`
@@ -101,10 +103,21 @@ type DivergenceRequest struct {
 
 // TimeSeriesResponse API response payload
 type TimeSeriesResponse struct {
+	Source   *DataSource       `json:"source,omitempty"`
 	Region   Region            `json:"region"`
 	Variable DatasetVariable   `json:"variable"`
 	Series   []TimeSeriesPoint `json:"series"`
 	Trend    *TrendResult      `json:"trend,omitempty"`
+}
+
+// DataSource records where measurements originated and how they were processed.
+type DataSource struct {
+	Name          string `json:"name"`
+	URL           string `json:"url"`
+	Kind          string `json:"kind"`
+	Description   string `json:"description"`
+	RetrievedAt   string `json:"retrieved_at"`
+	MissingMonths int    `json:"missing_months"`
 }
 
 // SystemStatus health check response

@@ -1,0 +1,79 @@
+.insights-panel {
+  @apply rounded-[27px] border border-[#126692] bg-discovery-surface;
+  background-image: linear-gradient(135deg, #10385bdf, #071c32f2 50%, #071a2ee8);
+  box-shadow: inset 0 1px 16px #209fff0e, 0 8px 30px #0002;
+}
+
+.insights-heading {
+  @apply flex items-center gap-3 text-[22px] font-bold leading-tight tracking-[-.5px] min-[1251px]:gap-[17px] min-[1251px]:text-[25px];
+}
+
+.insights-heading > svg {
+  @apply h-8 w-8 shrink-0 text-cyan-300;
+  filter: drop-shadow(0 0 6px #00cddd40);
+}
+
+.insights-button {
+  @apply inline-flex min-h-11 items-center justify-center gap-[11px] rounded-full border border-cyan-300 px-[23px] py-[11px] text-[17px] font-semibold transition duration-200 hover:-translate-y-0.5 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transform-none motion-reduce:transition-none;
+  background: linear-gradient(0deg, #075078b3, #031e31);
+  box-shadow: inset 0 -2px 9px #00e6e74d, 0 0 14px #00dbe421;
+}
+
+.insights-download-button {
+  background: linear-gradient(165deg, #00bded, #0084ff 45%, #0056dc 80%, #00b9ea);
+}
+
+/* Decorative artwork, glows and waves complement the Tailwind layout. */
+.insights-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(circle at 16% 31%, #43c7ff 0 .7px, transparent 1.3px), radial-gradient(circle at 79% 71%, #20a7ec 0 .5px, transparent 1px);
+  background-size: 271px 197px, 347px 263px;
+  opacity: .7;
+}
+
+.insights-earth {
+  background: linear-gradient(0deg, #050b19, transparent 48%), url('/textures/trend-earth-horizon.png') right -44px / cover no-repeat;
+}
+
+.insights-discoveries::after {
+  content: '';
+  position: absolute;
+  left: 3%;
+  bottom: -4px;
+  width: 85%;
+  height: 3px;
+  border-radius: 50%;
+  background: #30c7ba;
+  transform: rotate(-3deg);
+}
+
+.insights-insight-art {
+  background: linear-gradient(90deg, #021526f5 2%, #021526d9 42%, #02152625 78%), url('/textures/insights-rainfall.png') center / cover;
+}
+
+.insights-stat::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  right: -15px;
+  bottom: -34px;
+  width: 150%;
+  height: 60px;
+  border-top: 2px solid var(--wave);
+  border-radius: 50%;
+  background: linear-gradient(0deg, transparent, var(--wave));
+  transform: rotate(-10deg);
+  opacity: .8;
+}
+
+.insights-meaning .trend-variable-illustration {
+  @apply pointer-events-none absolute -right-[15px] bottom-0 h-auto w-3/5 opacity-20 min-[601px]:w-[39%] min-[601px]:opacity-50;
+}
+
+@media (max-width: 600px) {
+  .insights-insight-art { background-position: 65% center; }
+}

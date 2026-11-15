@@ -11,6 +11,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        discovery: {
+          space: "#050B19",
+          earth: "#158BE8",
+          teal: "#30C7BA",
+          surface: "#19263B",
+        },
         space: {
           950: "#07090E",
           900: "#0D1117",

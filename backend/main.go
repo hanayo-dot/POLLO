@@ -19,10 +19,12 @@ func main() {
 	router := api.NewRouter(cfg)
 
 	server := &http.Server{
-		Addr:         ":" + cfg.Port,
-		Handler:      router,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		Addr:        ":" + cfg.Port,
+		Handler:     router,
+		ReadTimeout: 15 * time.Second,
+		// Multi-year quality-screened vegetation subsets can take several minutes.
+		// Each observation handler separately limits upstream work to four minutes.
+		WriteTimeout: 5 * time.Minute,
 		IdleTimeout:  60 * time.Second,
 	}
 

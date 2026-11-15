@@ -1,6 +1,6 @@
-import { Region, DatasetVariable, TimeSeriesPoint, TrendResult, DivergenceAnalysis, GIBSLayer } from "../types";
+import { Region, DatasetVariable, TimeSeriesPoint, TrendResult, DivergenceAnalysis, GIBSLayer, DataSource } from "../types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+const API_BASE = (globalThis as { __POLLO_API_URL__?: string }).__POLLO_API_URL__ || "/api/v1";
 
 export async function fetchHealth(): Promise<{ status: string; version: string; mode: string }> {
   try {
@@ -60,12 +60,15 @@ export async function fetchRegions(): Promise<Region[]> {
   }
 }
 
-export async function fetchDatasets(): Promise<DatasetVariable[]> {
+export async function fetchDatasets(options?: { strict?: boolean; signal?: AbortSignal }): Promise<DatasetVariable[]> {
   try {
-    const res = await fetch(`${API_BASE}/datasets`);
+    const res = await fetch(`${API_BASE}/datasets`, { signal: options?.signal });
     if (!res.ok) throw new Error("Failed to fetch datasets");
-    return await res.json();
+    const datasets = await res.json();
+    if (!Array.isArray(datasets)) throw new Error("The dataset catalog is invalid.");
+    return datasets;
   } catch (err) {
+    if (options?.strict || options?.signal?.aborted) throw err;
     return [
       {
         id: "GPM_PRECIP",
@@ -126,11 +129,17 @@ export async function fetchDatasets(): Promise<DatasetVariable[]> {
 export async function fetchTimeSeries(
   regionId: string,
   variableId: string,
-  deseasonalize: boolean = false
-): Promise<{ region: Region; variable: DatasetVariable; series: TimeSeriesPoint[]; trend?: TrendResult }> {
-  const url = `${API_BASE}/timeseries?region=${regionId}&variable=${variableId}&deseasonalize=${deseasonalize}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Failed to fetch time series");
+  deseasonalize: boolean = false,
+  range?: { start?: string; end?: string; signal?: AbortSignal }
+): Promise<{ region: Region; variable: DatasetVariable; series: TimeSeriesPoint[]; trend?: TrendResult; source?: DataSource }> {
+  const params = new URLSearchParams({ region: regionId, variable: variableId, deseasonalize: String(deseasonalize) });
+  if (range?.start) params.set("start", range.start);
+  if (range?.end) params.set("end", range.end);
+  const res = await fetch(`${API_BASE}/timeseries?${params}`, { signal: range?.signal });
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.error || "Failed to fetch time series. Please try again.");
+  }
   return await res.json();
 }
 

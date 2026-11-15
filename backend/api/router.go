@@ -18,6 +18,7 @@ import (
 	"github.com/pollo/backend/internal/export"
 	"github.com/pollo/backend/internal/geospatial"
 	"github.com/pollo/backend/internal/models"
+	"github.com/pollo/backend/internal/observations"
 	"github.com/pollo/backend/internal/trendx"
 )
 
@@ -158,7 +159,7 @@ func (r *Router) handleDatasets(w http.ResponseWriter, req *http.Request) {
 		respondError(w, http.StatusMethodNotAllowed, methodNotAllowed)
 		return
 	}
-	respondJSON(w, http.StatusOK, data.AvailableVariables())
+	respondJSON(w, http.StatusOK, append(data.AvailableVariables(), observations.Variables()...))
 }
 
 func (r *Router) handleTimeSeries(w http.ResponseWriter, req *http.Request) {
@@ -168,6 +169,10 @@ func (r *Router) handleTimeSeries(w http.ResponseWriter, req *http.Request) {
 	}
 
 	query := req.URL.Query()
+	if query.Has("latitude") || query.Has("longitude") {
+		respondError(w, http.StatusBadRequest, "Select a region from /regions; arbitrary-coordinate analysis is not enabled")
+		return
+	}
 	regionID := query.Get("region")
 	if regionID == "" {
 		regionID = "lake_victoria_basin"
@@ -184,6 +189,12 @@ func (r *Router) handleTimeSeries(w http.ResponseWriter, req *http.Request) {
 	if !okR {
 		respondError(w, http.StatusNotFound, fmt.Sprintf("Region '%s' not found", regionID))
 		return
+	}
+	for _, observed := range observations.Variables() {
+		if observed.ID == variableID {
+			r.handleObservedRegion(w, req, *reg)
+			return
+		}
 	}
 	v, okV := data.GetVariable(variableID)
 	if !okV {
