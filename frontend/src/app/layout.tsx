@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="bg-space-950 text-gray-100 flex flex-col min-h-screen">
         <Navbar />
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="flex-1 w-full flex flex-col">
           {children}
         </main>
         <footer className="border-t border-space-800 bg-space-900/60 py-6 text-center text-xs text-gray-500">
