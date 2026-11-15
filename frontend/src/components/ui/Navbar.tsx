@@ -28,6 +28,7 @@ export const Navbar: React.FC = () => {
     { href: "/trend-analysis", label: "Trend Analysis", icon: Activity },
     { href: "/insights", label: "Insights", icon: Lightbulb },
     { href: "/data-sources", label: "Data Sources", icon: Database },
+    { href: "/dashboard", label: "Dashboard", icon: Globe },
   ];
 
   return (
