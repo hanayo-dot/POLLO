@@ -123,7 +123,7 @@ export default function Insights() {
         <a href={`${back}#trend-chart`} aria-label="Visualise" className={NAV_LINK}><ChartColumnIncreasing aria-hidden="true"/><span>Visualise</span></a>
         <a href={back} aria-label="Trend Analysis" className={NAV_LINK}><ChartLine aria-hidden="true"/><span>Trend Analysis</span></a>
         <a href="#insights-main" aria-current="page" aria-label="Insights" className={`${NAV_LINK} rounded-full border border-cyan-300 bg-cyan-500/10 px-[17px] shadow-[inset_0_-3px_8px_#00c8ff38] [&_svg]:text-cyan-300 [&_span]:max-[600px]:not-sr-only`}><Lightbulb aria-hidden="true"/><span>Insights</span></a>
-        <a href="#insights-source" aria-label="Data Sources" className={NAV_LINK}><Database aria-hidden="true"/><span>Data Sources</span></a>
+        <a href={`/data-sources${selection ? `?${new URLSearchParams(selection)}` : ""}`} aria-label="Data Sources" className={NAV_LINK}><Database aria-hidden="true"/><span>Data Sources</span></a>
       </div>
       <span className="flex max-w-[250px] items-center gap-[9px] rounded-full border border-[#164b71] bg-[#061d30c9] px-[17px] py-2 text-sm max-[600px]:max-w-[180px] max-[600px]:text-xs"><MapPin size={20} className="shrink-0 text-discovery-earth" aria-hidden="true"/>{data?.region.name || "Your investigation"}</span>
     </nav>

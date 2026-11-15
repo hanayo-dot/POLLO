@@ -16,6 +16,7 @@ import (
 	"github.com/pollo/backend/internal/divergence"
 	"github.com/pollo/backend/internal/earthlink"
 	"github.com/pollo/backend/internal/export"
+	"github.com/pollo/backend/internal/geospatial"
 	"github.com/pollo/backend/internal/models"
 	"github.com/pollo/backend/internal/observations"
 	"github.com/pollo/backend/internal/trendx"
@@ -201,8 +202,43 @@ func (r *Router) handleTimeSeries(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	points, err := data.GenerateBenchmarkTimeSeries(regionID, variableID)
+	// Engine selection: default to spatial extraction (2D geospatial raster clipping & aggregation)
+	engineParam := strings.ToLower(query.Get("engine"))
+	useSpatial := r.cfg.UseSpatialEngine
+	if engineParam == "legacy" || engineParam == "1d" {
+		useSpatial = false
+	} else if engineParam == "spatial" || engineParam == "2d" {
+		useSpatial = true
+	}
+
+	aggType := geospatial.AggMean
+	if aggStr := query.Get("agg"); aggStr != "" {
+		var err error
+		aggType, err = geospatial.ParseAggregationType(aggStr)
+		if err != nil {
+			respondError(w, http.StatusBadRequest, fmt.Sprintf("invalid aggregation type: %s", err.Error()))
+			return
+		}
+	}
+
+	weighted := true
+	if wStr := query.Get("weighted"); wStr != "" {
+		weighted = strings.ToLower(wStr) == "true" || wStr == "1"
+	}
+
+	var points []models.TimeSeriesPoint
+	var err error
+	if useSpatial {
+		points, err = data.ExtractRegionSpatialTimeSeries(regionID, variableID, aggType, weighted)
+	} else {
+		points, err = data.GenerateBenchmarkTimeSeriesLegacy(regionID, variableID)
+	}
+
 	if err != nil {
+		if strings.Contains(err.Error(), "unsupported or invalid spatial resolution") {
+			respondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
