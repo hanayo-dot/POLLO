@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { gsap } from "gsap";
-import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, ChartColumnIncreasing, ChartLine, Check, CloudRain, Database, ExternalLink, House, Info, Layers, Leaf, Lightbulb, LoaderCircle, MapPin, Satellite, Search, ShieldCheck, Thermometer, TriangleAlert, Waves, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, Check, CloudRain, Database, ExternalLink, Info, Layers, Leaf, LoaderCircle, MapPin, Satellite, ShieldCheck, Thermometer, TriangleAlert, Waves, X } from "lucide-react";
 import { fetchDatasets, fetchTimeSeries } from "../../services/api";
 import type { DatasetVariable } from "../../types";
 import { readSelection } from "../insights/findings";
@@ -15,7 +15,6 @@ import { documentation, NASA_REFERENCES, safeSourceURL, usedDatasets } from "./p
 type Detail = "methodology" | "limitations" | "citations";
 const detailLabels: Record<Detail, string> = { methodology: "Methodology", limitations: "Data Limitations", citations: "Citations" };
 const tabs = Object.keys(detailLabels) as Detail[];
-const navLink = "flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap text-sm hover:text-cyan-200 max-[600px]:text-xs";
 
 function External({ href, children, className = "" }: { href: string; children: ReactNode; className?: string }) {
   return <a href={href} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-2 ${className}`}>{children}<ExternalLink size={17} className="shrink-0" aria-hidden="true"/><span className="sr-only"> (opens in a new tab)</span></a>;
@@ -105,20 +104,40 @@ export default function DataSources() {
   const retrievedDate = retrievedAt === "Not supplied" ? retrievedAt : retrievedAt.slice(0, 10);
   const missingMonths = analysis?.source?.missing_months ?? "Not supplied";
 
-  return <div ref={root} className="sources-page relative isolate min-h-screen overflow-clip bg-discovery-space font-[Arial,Helvetica,sans-serif] text-[#f4f7ff] [&_:focus-visible]:outline [&_:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-4 [&_:focus-visible]:outline-cyan-200">
-    <a href="#data-sources-main" className="fixed left-2 top-2 z-50 -translate-y-[150%] rounded-lg bg-discovery-surface p-3 focus:translate-y-0">Skip to data sources</a>
-    <div aria-hidden="true" className="insights-earth pointer-events-none absolute right-0 top-[63px] -z-10 h-[370px] w-full max-[600px]:top-[116px] max-[600px]:opacity-40"/>
-    <nav aria-label="Main navigation" className="relative z-30 flex min-h-[62px] items-center justify-between gap-[18px] border-b border-[#164165] bg-[#02101ee8] px-[max(28px,calc((100vw-1560px)/2))] max-[1250px]:flex-wrap max-[1250px]:py-2.5 max-[600px]:gap-3 max-[600px]:px-4">
-      <a href="/dashboard" className="flex shrink-0 items-center gap-2 text-[27px] font-bold max-[600px]:text-xl"><svg viewBox="0 0 70 52" fill="none" aria-hidden="true" className="h-11 w-14 text-cyan-300 max-[600px]:h-9 max-[600px]:w-10"><circle cx="34" cy="26" r="21" stroke="currentColor" strokeWidth="1.8"/><ellipse cx="34" cy="27" rx="33" ry="9" transform="rotate(-25 34 27)" stroke="currentColor" strokeWidth="1.8"/></svg>POLLO</a>
-      <div className="flex items-center gap-[clamp(8px,1.2vw,24px)] max-[1250px]:order-3 max-[1250px]:w-full max-[1250px]:justify-between max-[1250px]:overflow-x-auto max-[600px]:gap-3 [&_svg]:h-[22px] [&_svg]:w-[22px]">
-        {[{ href: "/dashboard", label: "Home", icon: House }, { href: `${back}#analysis-controls`, label: "Investigate", icon: Search }, { href: `${back}#trend-chart`, label: "Visualise", icon: ChartColumnIncreasing }, { href: back, label: "Trend Analysis", icon: ChartLine }, { href: `/insights${query}`, label: "Insights", icon: Lightbulb }].map(({ href, label, icon: NavIcon }) => <a key={label} href={href} aria-label={label} className={navLink}><NavIcon aria-hidden="true"/><span className="max-[600px]:sr-only">{label}</span></a>)}
-        <a href="#data-sources-main" className={`${navLink} rounded-full border border-cyan-300 bg-cyan-500/10 px-[17px] shadow-[inset_0_-3px_8px_#00c8ff38]`} aria-current="page" aria-label="Data Sources"><Database className="text-cyan-300" aria-hidden="true"/><span className="max-[360px]:sr-only">Data Sources</span></a>
-      </div>
-      <span className="flex max-w-[250px] items-center gap-2 rounded-full border border-[#164b71] bg-[#061d30c9] px-4 py-2 text-sm max-[600px]:max-w-[180px] max-[600px]:text-xs"><MapPin size={20} className="shrink-0 text-discovery-earth" aria-hidden="true"/>{analysis?.region.name || "Your investigation"}</span>
-    </nav>
-
-    <main id="data-sources-main" tabIndex={-1} className="mx-auto w-[calc(100%-96px)] max-w-[1560px] pb-8 max-[1250px]:w-[calc(100%-48px)] max-[600px]:w-[calc(100%-28px)]">
-      <header className="sources-reveal pb-6 pl-[54px] pt-6 max-[950px]:pl-3 max-[600px]:pl-1"><p className="mb-1.5 text-sm font-bold tracking-[.16em] text-cyan-300">DATA SOURCES</p><h1 className="text-[clamp(28px,2.5vw,39px)] font-bold leading-tight tracking-tight">Where Our Data Comes From</h1><p className="mt-2 text-lg leading-relaxed max-[600px]:text-base">Trusted, open scientific data from NASA and global Earth observation providers.</p></header>
+  return <div ref={root} className="sources-page relative isolate min-h-screen overflow-clip text-[#f4f7ff] pb-12 [&_:focus-visible]:outline [&_:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-4 [&_:focus-visible]:outline-cyan-200">
+    <main id="data-sources-main" tabIndex={-1} className="mx-auto w-[calc(100%-48px)] max-w-[1560px] pt-6 pb-8 max-[600px]:w-[calc(100%-28px)]">
+      <header className="sources-reveal mb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-cyan-400 mb-3">
+          <Satellite className="w-3.5 h-3.5 text-cyan-400" />
+          <span>NASA EOSDIS • PROVENANCE &amp; OPEN CITATIONS</span>
+        </div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
+              Where Our Data Comes From
+            </h1>
+            <p className="mt-2 text-slate-300 text-sm sm:text-base max-w-3xl">
+              Trusted, open scientific data from NASA and global Earth observation satellite missions.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <a
+              href={back}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#082139] border border-cyan-500/30 text-xs font-medium text-cyan-300 hover:bg-[#0c2f52] transition-colors"
+            >
+              <ArrowLeft size={14} />
+              <span>Back to Trend Analysis</span>
+            </a>
+            <a
+              href={`/insights${query}`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#082139] border border-cyan-500/30 text-xs font-medium text-cyan-300 hover:bg-[#0c2f52] transition-colors"
+            >
+              <BookOpen size={14} />
+              <span>View Insights</span>
+            </a>
+          </div>
+        </div>
+      </header>
 
       <div className="grid grid-cols-[1.43fr_1fr] gap-5 max-[950px]:grid-cols-1">
         <section className="insights-panel sources-reveal relative min-h-[254px] overflow-hidden border-cyan-300">
