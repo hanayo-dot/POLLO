@@ -152,7 +152,7 @@ export default function TrendAnalysis() {
 
   return <div ref={root} className="trend-page">
     <video
-      className="fixed inset-0 z-0 h-full w-full object-cover opacity-35 pointer-events-none"
+      className="fixed inset-0 z-0 h-full w-full object-cover opacity-80 pointer-events-none"
       src="/videos/trend-analysis-bg.mp4"
       autoPlay
       loop
@@ -163,7 +163,7 @@ export default function TrendAnalysis() {
       tabIndex={-1}
     />
     <div
-      className="pointer-events-none fixed inset-0 z-[1] bg-gradient-to-b from-[#070b14]/70 via-[#070b14]/85 to-[#070b14]"
+      className="pointer-events-none fixed inset-0 z-[1] bg-gradient-to-b from-[#070b14]/30 via-transparent to-[#070b14]/60"
       aria-hidden="true"
     />
     <div className="trend-content relative z-10">

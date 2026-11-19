@@ -78,11 +78,11 @@ export default function DashboardPage() {
         backgroundAttachment: "fixed",
       }}
     >
-      {/* Deep space gradient overlay keeps the Earth image atmospheric and readable */}
-      <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-b from-[#070b14]/80 via-[#070b14]/90 to-[#070b14]" />
+      {/* Atmospheric gradient overlay allows the background Earth imagery to remain vividly clear and visible */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-b from-[#070b14]/30 via-transparent to-[#070b14]/65" />
       <div className="relative z-10 mx-auto w-full max-w-[1500px] space-y-6">
         {/* Top Hero / Context Header */}
-        <div className="bg-[#0b101d]/85 backdrop-blur-2xl border border-[#1c2a47]/80 rounded-[28px] p-6 sm:p-8 shadow-[0_18px_60px_rgba(0,0,0,0.5)] relative overflow-hidden">
+        <div className="bg-[#0b101d]/65 backdrop-blur-2xl border border-cyan-500/25 rounded-[28px] p-6 sm:p-8 shadow-[0_18px_60px_rgba(0,0,0,0.5)] relative overflow-hidden">
           <div className="absolute -right-16 -top-16 w-64 h-64 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
             <div>
@@ -125,7 +125,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Control Bar: Region, Variable, and Deseasonalization Controls */}
-        <div className="bg-[#0b101d]/85 backdrop-blur-2xl border border-[#1c2a47]/80 rounded-xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+        <div className="bg-[#0b101d]/65 backdrop-blur-2xl border border-cyan-500/25 rounded-xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 shadow-sm">
           <div className="flex flex-wrap items-center gap-4">
             {/* Primary Region */}
             <div className="flex items-center gap-2">
@@ -207,7 +207,7 @@ export default function DashboardPage() {
         {activeTab === "overview" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Geospatial Map Canvas Placeholder */}
-            <div className="lg:col-span-2 bg-[#0b101d]/85 backdrop-blur-2xl border border-[#1c2a47]/80 rounded-2xl p-6 flex flex-col justify-between min-h-[460px] relative overflow-hidden">
+            <div className="lg:col-span-2 bg-[#0b101d]/65 backdrop-blur-2xl border border-cyan-500/25 rounded-2xl p-6 flex flex-col justify-between min-h-[460px] relative overflow-hidden">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -251,7 +251,7 @@ export default function DashboardPage() {
 
             {/* Region Status & Physics Panel */}
             <div className="space-y-6">
-              <div className="bg-[#0b101d]/85 backdrop-blur-2xl border border-[#1c2a47]/80 rounded-2xl p-6">
+              <div className="bg-[#0b101d]/65 backdrop-blur-2xl border border-cyan-500/25 rounded-2xl p-6">
                 <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
                   <Layers className="w-4 h-4 text-cyan-400" />
                   Variable Specification
@@ -281,7 +281,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Quick Scientific Scorecard */}
-              <div className="bg-[#0b101d]/85 backdrop-blur-2xl border border-[#1c2a47]/80 rounded-2xl p-6">
+              <div className="bg-[#0b101d]/65 backdrop-blur-2xl border border-cyan-500/25 rounded-2xl p-6">
                 <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-cyan-400" />
                   TREND-X Rapid Scorecard
@@ -311,7 +311,7 @@ export default function DashboardPage() {
 
         {/* TREND-X Engine Tab */}
         {activeTab === "trends" && (
-          <div className="bg-[#0b101d]/85 backdrop-blur-2xl border border-[#1c2a47]/80 rounded-2xl p-5 sm:p-7 space-y-6">
+          <div className="bg-[#0b101d]/65 backdrop-blur-2xl border border-cyan-500/25 rounded-2xl p-5 sm:p-7 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -377,7 +377,7 @@ export default function DashboardPage() {
 
         {/* Divergence Detector Tab */}
         {activeTab === "divergence" && (
-          <div className="bg-[#0b101d]/85 backdrop-blur-2xl border border-[#1c2a47]/80 rounded-2xl p-5 sm:p-7 space-y-6">
+          <div className="bg-[#0b101d]/65 backdrop-blur-2xl border border-cyan-500/25 rounded-2xl p-5 sm:p-7 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">

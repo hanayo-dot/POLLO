@@ -3,7 +3,7 @@
 }
 
 .page [class*="bg-[#"] {
-  background-color: rgba(11, 16, 29, 0.82);
+  background-color: rgba(11, 16, 29, 0.68);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -28,21 +28,21 @@
 }
 
 .page [class*="bg-slate-800"] {
-  background-color: rgba(15, 23, 42, 0.8);
+  background-color: rgba(15, 23, 42, 0.65);
 }
 
 .page [class*="border-slate-"] {
-  border-color: rgba(28, 42, 71, 0.8);
+  border-color: rgba(56, 189, 248, 0.25);
 }
 
 .page [class*="border-blue-"],
 .page [class*="border-sky-"] {
-  border-color: rgba(56, 189, 248, 0.35);
+  border-color: rgba(56, 189, 248, 0.4);
 }
 
 .page [class*="hover:bg-slate-800"]:hover,
 .page [class*="hover:bg-[#"]:hover {
-  background-color: rgba(14, 165, 233, 0.15);
+  background-color: rgba(14, 165, 233, 0.2);
 }
 
 .page [class*="hover:bg-blue-500"]:hover {
@@ -54,7 +54,7 @@
 .page [class*="bg-[#0b1222]"],
 .page [class*="bg-[#101a33]"],
 .page [class*="bg-[#0a0f1d]"] {
-  background-color: rgba(11, 17, 32, 0.88);
+  background-color: rgba(11, 17, 32, 0.72);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
