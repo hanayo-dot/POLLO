@@ -1,228 +1,760 @@
-.trend-page { position: relative; isolation: isolate; min-height: 100vh; overflow: clip; color: #f4f7ff; background: #031225; font-family: Arial, Helvetica, sans-serif; }
-.trend-page::before { content: ''; position: absolute; inset: 0; z-index: -2; pointer-events: none; background: radial-gradient(ellipse at 82% 32%, #003b6640, transparent 55%), radial-gradient(circle at 16% 31%, #43c7ff 0 .7px, transparent 1.3px), radial-gradient(circle at 79% 71%, #20a7ec 0 .5px, transparent 1px), radial-gradient(circle at 44% 14%, #0095e8 0 .6px, transparent 1px); background-size: auto, 271px 197px, 347px 263px, 193px 311px; opacity: .8; }
-.trend-space-art { position: absolute; z-index: -1; top: 63px; right: 0; width: 100%; height: 330px; background: linear-gradient(0deg, #031225, transparent 35%), url('/textures/trend-earth-horizon.png') right -44px / cover no-repeat; pointer-events: none; }
-.trend-navigation { position: relative; z-index: 30; min-height: 62px; padding: 0 max(28px, calc((100vw - 1560px) / 2)); display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #02101ee8; border-bottom: 1px solid #164165; }
-.trend-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; font-size: 27px; font-weight: 750; letter-spacing: -.7px; white-space: nowrap; }
-.trend-brand > span > span { color: #00aef5; }
-.trend-brand svg { flex-shrink: 0; }
-.trend-nav-links { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 1.2vw, 24px); }
-.trend-nav-links a, .trend-nav-links button { display: flex; gap: 10px; align-items: center; font-size: 14px; white-space: nowrap; padding: 7px 0; }
-.trend-nav-links svg { width: 22px; height: 22px; stroke-width: 1.8; }
-.trend-nav-links .active { border: 1px solid #00d5ee; border-radius: 999px; padding: 7px 17px; background: linear-gradient(0deg, #007baf50, #003b6420); box-shadow: inset 0 -3px 8px #00c8ff38; }
-.trend-nav-links .active svg { color: #00eff2; }
-.trend-nav-links a:hover, .trend-nav-links button:hover { color: #60f4ed; }
-.trend-nav-actions { display: flex; align-items: center; gap: 19px; }
-.trend-location { display: flex; align-items: center; gap: 9px; border: 1px solid #224f70; border-radius: 999px; padding: 8px 13px; background: #0c253b88; }
-.trend-location > svg { color: #00aafa; flex-shrink: 0; fill: #00aafa22; }
-.trend-location select { background: transparent; font-size: 14px; font-weight: 600; width: 155px; appearance: none; cursor: pointer; }
-.trend-icon-button { display: grid; place-items: center; width: 27px; height: 32px; }
-.trend-nav-popover { position: absolute; right: 28px; top: 58px; width: min(330px, calc(100vw - 32px)); border: 1px solid #34799d; border-radius: 16px; padding: 20px; background: #071e33; box-shadow: 0 10px 35px #0009; font-size: 14px; line-height: 1.6; }
-.trend-nav-popover h2 { font-weight: 700; font-size: 17px; margin-bottom: 8px; }
-.trend-nav-popover a { display: inline-block; color: #42e7e9; margin-top: 12px; }
-.trend-content { position: relative; width: calc(100% - 96px); max-width: 1512px; margin: 0 auto; padding-bottom: 14px; }
-.trend-hero { position: relative; padding: 30px 0 0 56px; }
-.trend-eyebrow { color: #00f1e6; font-size: 14px; letter-spacing: .16em; font-weight: 700; margin-bottom: 8px; line-height: 18px; }
-.trend-hero h1 { font-size: clamp(24px, 2vw, 30px); font-weight: 750; letter-spacing: -.8px; line-height: 1.18; }
-.trend-changing { color: #22c4ef; position: relative; }
-.trend-changing::after { content: ''; position: absolute; height: 3px; background: #00f2db; bottom: -4px; left: 3%; width: 85%; border-radius: 50%; transform: rotate(-3deg); }
-.trend-intro { margin-top: 6px; font-size: 19px; line-height: 27px; color: #f0f2fa; }
-.trend-panel { border: 1px solid #126692; border-radius: 27px; background: linear-gradient(135deg, #10385bdf, #071c32f2 50%, #071a2ee8); box-shadow: inset 0 1px 16px #209fff0e, 0 8px 30px #0002; }
-.trend-controls { position: relative; z-index: 20; display: grid; grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1.06fr) minmax(215px, .8fr); align-items: center; gap: 42px; margin: 28px 24px 26px; padding: 13px 42px 13px 54px; min-height: 88px; }
-.trend-control { display: flex; align-items: center; gap: 25px; min-width: 0; min-height: 58px; padding: 6px 21px; border: 1px solid #4380a5; border-radius: 16px; background: linear-gradient(115deg, #071a2e, #07182bb3); }
-.trend-control > svg:first-child { flex-shrink: 0; color: #edfaff; }
-.trend-variable > svg:first-child { color: #7df4ff; }
-.trend-control > span { min-width: 0; flex: 1; }
-.trend-control > svg:last-child { flex-shrink: 0; }
-.trend-control-label { display: block; font-size: 14px; font-weight: 400; line-height: 19px; }
-.trend-control select, .trend-control strong { display: block; width: 100%; font-size: 20px; font-weight: 650; line-height: 25px; background: transparent; }
-.trend-control select { appearance: none; cursor: pointer; }
-.trend-control-divider { height: 38px; width: 1px; background: #4983a5; opacity: .7; }
-.trend-page option { color: #f5faff; background: #082037; }
-.trend-page select, .trend-page input { color-scheme: dark; }
-.trend-page :focus-visible { outline: 2px solid #67e8f9; outline-offset: 5px; }
-.trend-page button, .trend-page summary, .trend-page a { -webkit-tap-highlight-color: transparent; }
-.trend-page button { transition: filter .2s, background .2s; }
-.trend-page button:hover { filter: brightness(1.17); }
-.trend-page button:disabled { opacity: .55; cursor: not-allowed; }
-.trend-date-picker { min-width: 0; position: relative; }
-.trend-date-picker summary { list-style: none; cursor: pointer; }
-.trend-date-picker summary::-webkit-details-marker { display: none; }
-.trend-date-popover { position: absolute; top: calc(100% + 15px); left: 0; width: 100%; min-width: 265px; border: 1px solid #4385a4; border-radius: 17px; padding: 20px; background: #092239; box-shadow: 0 15px 35px #0009; }
-.trend-date-popover > p:first-child { font-size: 15px; font-weight: 600; margin-bottom: 15px; }
-.trend-date-popover label { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 10px 0; font-size: 14px; color: #b6d0e3; }
-.trend-date-popover input { min-width: 0; background: #031529; padding: 7px; border: 1px solid #386484; border-radius: 8px; color: white; }
-.trend-date-popover button { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; margin-top: 15px; border-radius: 9px; padding: 8px; background: #057aa2; font-size: 14px; }
-.trend-run, .trend-detail-button.active { background: linear-gradient(165deg, #00cfee, #0084fa 45%, #005be0 78%, #007bd7); border: 1px solid #00f5ef; box-shadow: inset 0 0 7px #00f7ff, 0 0 16px #00c8ff25; }
-.trend-run { display: flex; align-items: center; justify-content: center; gap: 20px; min-height: 56px; width: 100%; max-width: 300px; justify-self: end; border-radius: 999px; padding: 10px 17px; font-size: 20px; font-weight: 650; white-space: nowrap; }
-.trend-button-spark { color: #16e5ed; font-size: 33px; line-height: 1; }
-.trend-results-grid { position: relative; display: grid; gap: 22px; grid-template-columns: minmax(0, 2.27fr) minmax(320px, 1fr); }
-.trend-chart-card { min-width: 0; padding: 20px 32px 10px; scroll-margin-top: 20px; }
-.trend-chart-heading { display: flex; align-items: center; gap: 25px; min-height: 59px; margin-bottom: 8px; }
-.trend-chart-heading > div:first-of-type { min-width: 0; flex: 1; }
-.trend-weather-icon { flex-shrink: 0; color: #00e5e6; filter: drop-shadow(0 0 9px #00e5ff55); stroke-width: 1.5; }
-.trend-chart-heading h2 { font-size: 23px; line-height: 28px; font-weight: 700; }
-.trend-chart-heading p { font-size: 17px; color: #f0f4fc; margin-top: 4px; line-height: 23px; }
-.trend-chart-toggle { display: flex; flex-shrink: 0; align-items: center; border: 1px solid #245274; border-radius: 14px; background: #061c31a6; overflow: hidden; }
-.trend-chart-toggle button { padding: 8px 17px; color: #b6dfef; position: relative; }
-.trend-chart-toggle button + button::before { content: ''; width: 1px; height: 24px; position: absolute; left: 0; top: 8px; background: #285576; }
-.trend-chart-toggle .active { border-radius: 13px; color: #e2ffff; background: linear-gradient(0deg, #00b7d875, #074364); box-shadow: inset 0 0 10px #00d5fa88; outline: 1px solid #00eaff; outline-offset: -1px; }
-.trend-chart-placeholder { min-height: 285px; display: flex; flex-direction: column; gap: 14px; justify-content: center; align-items: center; text-align: center; color: #a3bfd3; }
-.trend-chart-placeholder svg { color: #1bcedb; }
-.trend-chart-placeholder span { font-size: 14px; }
-.trend-glance { position: relative; overflow: hidden; padding: 24px 25px; background: radial-gradient(ellipse at 100% 0, #00b6a566, transparent 38%), linear-gradient(135deg, #103b60, #071b2ef5 67%); }
-.trend-glance > h2 { position: relative; display: flex; align-items: center; gap: 15px; font-size: 26px; font-weight: 700; margin-bottom: 23px; line-height: 31px; }
-.trend-glance > h2 svg { color: #00f0e9; }
-.trend-glance-wave { position: absolute; right: -6px; top: -6px; width: 150px; height: 78px; background: linear-gradient(150deg, transparent 15%, #00e9c888 40%, #00c8cb22 65%, transparent 80%); border-radius: 95% 10% 90% 10%; transform: rotate(-12deg); box-shadow: inset 0 6px 6px #00eedd44; }
-.trend-stats { display: grid; gap: 10px; position: relative; }
-.trend-stat { display: flex; gap: 28px; align-items: center; border: 1px solid #285c7d; border-radius: 20px; padding: 9px 26px; min-height: 78px; background: linear-gradient(115deg, #144465a0, #061b30); }
-.trend-stat-icon { display: grid; place-items: center; width: 57px; height: 57px; flex-shrink: 0; border: 1px solid #13506c; border-radius: 50%; background: #03172a; color: #00c6f3; box-shadow: 0 0 18px #00f1ef14; }
-.trend-stat p { font-size: 15px; line-height: 19px; margin-bottom: 4px; }
-.trend-stat strong { font-size: 23px; line-height: 29px; font-weight: 700; text-transform: capitalize; }
-.trend-positive { color: #00f0e6; }
-.trend-negative { color: #ff7a79; }
-.trend-rate-unit { font-size: 16px; text-transform: none; white-space: nowrap; }
-.trend-check-ring { display: grid; place-items: center; width: 36px; height: 36px; border: 2px solid #00f0e6; border-radius: 50%; }
-.trend-significance { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
-.trend-significance > span { font-size: 15px; white-space: nowrap; }
-.trend-picture { position: relative; display: flex; align-items: center; min-height: 92px; gap: 30px; margin: 22px 6px 24px; padding: 15px 220px 15px 60px; overflow: hidden; border-color: #00aebe; background: linear-gradient(110deg, #00515b80, #09223c 32%, #071a2e); }
-.trend-picture h2 { display: flex; align-items: center; gap: 24px; flex-shrink: 0; min-width: 300px; color: #50f5ed; font-size: 26px; font-weight: 700; }
-.trend-picture h2 svg { color: #00e5e6; stroke-width: 1.5; filter: drop-shadow(0 0 7px #00e9e944); }
-.trend-picture-copy { border-left: 1px solid #7196af; padding-left: 65px; font-size: 16px; line-height: 25px; }
-.trend-variable-illustration { position: absolute; right: 0; bottom: 0; height: 97px; width: 225px; pointer-events: none; }
-.trend-details { max-width: 840px; margin: auto; scroll-margin-top: 24px; }
-.trend-detail-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; padding: 10px 28px; border-radius: 34px; }
-.trend-detail-button { display: flex; gap: 17px; align-items: center; justify-content: center; min-height: 43px; white-space: nowrap; font-size: 15px; border: 1px solid #244f6f; border-radius: 999px; }
-.trend-detail-button:last-child { justify-content: space-evenly; }
-.trend-detail-content { padding: 27px; margin-top: 16px; font-size: 15px; line-height: 1.7; color: #d6e5ee; }
-.trend-detail-content h2 { font-size: 20px; color: #76eff2; font-weight: 700; margin-bottom: 20px; }
-.trend-detail-content dt { color: #99b5ca; text-transform: capitalize; margin-bottom: 3px; }
-.trend-comparison-value { display: block; font-size: 21px; color: #55ece6; margin-top: 8px; }
-.trend-source-note { display: flex; justify-content: center; align-items: center; gap: 5px; margin: 14px 0 0; font-size: 11px; color: #98b4cb; }
-.trend-source-note > span { width: 5px; height: 5px; border-radius: 50%; background: #4f9eb7; margin-right: 3px; }
-.trend-source-note button { text-decoration: underline; text-underline-offset: 3px; }
-.trend-inline-error { color: #fda4af; font-size: 14px; margin: -12px 30px 20px; }
-.trend-error { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; background: #451a2a; border: 1px solid #af5e75; padding: 15px 20px; border-radius: 16px; color: #fecdd3; }
-.trend-error button { text-decoration: underline; white-space: nowrap; }
-@media (max-width: 1450px) {
-  .trend-navigation { gap: 16px; padding: 0 28px; }
-  .trend-brand { font-size: 23px; gap: 6px; }
-  .trend-brand svg { width: 49px; }
-  .trend-nav-links { gap: 15px; }
-  .trend-nav-links a, .trend-nav-links button { font-size: 13px; gap: 7px; }
-  .trend-nav-links .active { padding: 7px 12px; }
-  .trend-nav-actions { gap: 14px; }
-  .trend-location select { width: 125px; font-size: 13px; }
-  .trend-content { width: calc(100% - 80px); }
-  .trend-hero { padding-left: 32px; }
-  .trend-intro { font-size: 17px; }
-  .trend-controls { gap: 26px; padding-left: 30px; padding-right: 30px; }
-  .trend-control { gap: 18px; }
-  .trend-chart-card { padding-left: 22px; padding-right: 22px; }
-  .trend-chart-heading { gap: 16px; }
-  .trend-chart-heading h2 { font-size: 20px; line-height: 25px; }
-  .trend-chart-heading p { font-size: 15px; }
-  .trend-chart-toggle button { padding: 8px 12px; }
-  .trend-stat { padding: 9px 16px; gap: 18px; }
-  .trend-stat strong { font-size: 21px; }
-  .trend-picture { padding-left: 35px; padding-right: 185px; gap: 25px; }
-  .trend-picture h2 { min-width: 270px; font-size: 25px; }
-  .trend-picture-copy { padding-left: 35px; font-size: 15px; }
-  .trend-variable-illustration { width: 180px; }
+.trend-page {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100vh - 4rem);
+  overflow: clip;
+  color: #f1f5f9;
+  font-family: inherit;
+  padding: 24px 0 48px;
 }
-@media (max-width: 1150px) {
-  .trend-navigation { flex-wrap: wrap; padding-top: 6px; padding-bottom: 6px; row-gap: 4px; }
-  .trend-nav-links { order: 3; width: 100%; justify-content: space-between; gap: 12px; padding-bottom: 2px; }
-  .trend-nav-links a, .trend-nav-links button { font-size: 14px; }
-  .trend-space-art { top: 108px; }
-  .trend-results-grid { grid-template-columns: minmax(0, 1.9fr) minmax(290px, 1fr); gap: 16px; }
-  .trend-controls { margin-inline: 0; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 205px; padding: 14px 20px; }
-  .trend-control-divider { display: none; }
-  .trend-control { gap: 12px; padding-inline: 13px; }
-  .trend-control strong, .trend-control select { font-size: 18px; }
-  .trend-run { font-size: 18px; gap: 12px; }
-  .trend-chart-heading { flex-wrap: wrap; }
-  .trend-chart-toggle { margin-left: auto; }
-  .trend-chart-card .trend-weather-icon { width: 38px; }
-  .trend-glance { padding: 20px 15px; }
-  .trend-glance h2 { font-size: 24px; gap: 10px; }
-  .trend-stat { gap: 14px; padding: 11px 12px; }
-  .trend-stat-icon { width: 45px; height: 45px; }
-  .trend-stat strong { font-size: 20px; }
-  .trend-picture { padding-left: 24px; padding-right: 155px; }
-  .trend-picture h2 { font-size: 22px; min-width: 220px; gap: 14px; }
-  .trend-picture-copy { padding-left: 24px; }
-  .trend-variable-illustration { width: 150px; }
-}
-@media (max-width: 850px) {
-  .trend-content { width: calc(100% - 40px); }
-  .trend-hero { padding-left: 4px; padding-top: 28px; }
-  .trend-hero h1 { font-size: 28px; }
-  .trend-intro { font-size: 16px; line-height: 24px; }
-  .trend-controls { gap: 14px; grid-template-columns: 1fr 1fr; margin-top: 24px; }
-  .trend-run { grid-column: 1 / -1; max-width: none; min-height: 48px; }
-  .trend-results-grid { grid-template-columns: minmax(0, 1fr); }
-  .trend-chart-heading { flex-wrap: nowrap; }
-  .trend-glance { padding: 20px; }
-  .trend-glance h2 { margin-bottom: 18px; }
-  .trend-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-  .trend-stat { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; }
-  .trend-stat strong { font-size: 19px; }
-  .trend-significance { gap: 2px; }
-  .trend-rate-unit { display: block; font-size: 13px; }
-  .trend-picture { padding: 20px 160px 20px 22px; display: block; }
-  .trend-picture h2 { margin-bottom: 14px; }
-  .trend-picture-copy { border: 0; padding: 0; }
-  .trend-detail-tabs { gap: 12px; padding: 10px 16px; }
-  .trend-detail-button { font-size: 13px; gap: 9px; }
-}
-@media (max-width: 540px) {
-  .trend-navigation { padding: 6px 15px; gap: 7px; }
-  .trend-brand { font-size: 21px; gap: 4px; }
-  .trend-brand svg { width: 42px; height: 40px; }
-  .trend-nav-actions { gap: 10px; }
-  .trend-location { max-width: 150px; padding: 6px 8px; gap: 5px; }
-  .trend-location select { width: 102px; font-size: 11px; }
-  .trend-icon-button { display: none; }
-  .trend-nav-links { gap: 4px; justify-content: space-around; }
-  .trend-nav-links a, .trend-nav-links button { padding: 8px; }
-  .trend-nav-links span { display: none; }
-  .trend-nav-links .active { padding: 7px 13px; }
-  .trend-nav-links .active span { display: inline; font-size: 12px; }
-  .trend-nav-links svg { width: 20px; height: 20px; }
-  .trend-content { width: calc(100% - 30px); }
-  .trend-space-art { top: 99px; height: 270px; background-size: auto 270px; opacity: .4; }
-  .trend-eyebrow { font-size: 11px; }
-  .trend-hero h1 { font-size: 24px; line-height: 1.2; }
-  .trend-intro { font-size: 14px; line-height: 22px; margin-top: 12px; }
-  .trend-controls { padding: 15px; grid-template-columns: 1fr; gap: 12px; margin: 24px 0 18px; }
-  .trend-control { min-height: 59px; padding: 8px 16px; gap: 19px; }
-  .trend-control-label { font-size: 12px; }
-  .trend-control select, .trend-control strong { font-size: 18px; }
-  .trend-run { grid-column: auto; min-height: 51px; }
-  .trend-date-popover { min-width: 0; }
-  .trend-panel { border-radius: 22px; }
-  .trend-chart-card { padding: 18px 12px 8px; }
-  .trend-chart-heading { gap: 12px; flex-wrap: wrap; padding: 0 5px; }
-  .trend-chart-heading > div:first-of-type { flex-basis: calc(100% - 60px); }
-  .trend-chart-heading h2 { font-size: 19px; line-height: 25px; }
-  .trend-chart-heading p { font-size: 13px; line-height: 20px; }
-  .trend-chart-toggle { margin-top: 2px; margin-left: auto; }
-  .trend-stats { grid-template-columns: 1fr; }
-  .trend-stat { flex-direction: row; align-items: center; gap: 23px; padding: 12px 21px; }
-  .trend-stat-icon { width: 52px; height: 52px; }
-  .trend-stat strong { font-size: 22px; }
-  .trend-rate-unit { display: inline; font-size: 14px; }
-  .trend-picture { margin: 18px 0; padding: 20px 20px 78px; }
-  .trend-picture h2 { font-size: 24px; }
-  .trend-picture-copy { font-size: 14px; line-height: 23px; }
-  .trend-variable-illustration { width: 180px; height: 79px; }
-  .trend-detail-tabs { grid-template-columns: 1fr; padding: 9px; gap: 8px; }
-  .trend-detail-button { font-size: 14px; min-height: 43px; }
-  .trend-detail-button:last-child { justify-content: center; }
-  .trend-detail-content { padding: 20px; }
-  .trend-source-note { font-size: 10px; flex-wrap: wrap; }
-  .trend-error { font-size: 14px; align-items: flex-start; flex-direction: column; }
-}
-@media (prefers-reduced-motion: reduce) { .trend-page *, .trend-page *::before, .trend-page *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 
-.trend-unavailable { margin: -10px 24px 22px; padding: 12px 18px; border: 1px solid #57747d; border-radius: 12px; background: #102c39; color: #c9e8ef; font-size: 14px; line-height: 1.5; }
+.trend-content {
+  position: relative;
+  width: calc(100% - 48px);
+  max-width: 1560px;
+  margin: 0 auto;
+}
+
+/* Header */
+.trend-hero {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.trend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #38bdf8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.trend-title {
+  font-size: clamp(26px, 2.4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  line-height: 1.25;
+}
+
+.trend-intro {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #94a3b8;
+  max-width: 860px;
+}
+
+/* Base Panel */
+.trend-panel {
+  border: 1px solid rgba(28, 42, 71, 0.8);
+  border-radius: 20px;
+  background: rgba(10, 16, 30, 0.85);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Parameter Controls Form */
+.trend-controls {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0 24px;
+  padding: 16px 24px;
+}
+
+.trend-control {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  min-height: 56px;
+  padding: 8px 16px;
+  border: 1px solid rgba(41, 67, 107, 0.6);
+  border-radius: 14px;
+  background: rgba(13, 24, 48, 0.5);
+  transition: all 0.2s ease;
+}
+
+.trend-control:hover,
+.trend-control:focus-within {
+  border-color: rgba(56, 189, 248, 0.7);
+  background: rgba(15, 30, 60, 0.75);
+}
+
+.trend-control > span {
+  min-width: 0;
+  flex: 1;
+}
+
+.trend-control-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.trend-control select,
+.trend-control strong {
+  display: block;
+  width: 100%;
+  font-size: 15px;
+  font-weight: 600;
+  color: #f1f5f9;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.trend-control select {
+  appearance: none;
+  cursor: pointer;
+}
+
+.trend-page option {
+  color: #f1f5f9;
+  background: #081628;
+}
+
+.trend-page select,
+.trend-page input {
+  color-scheme: dark;
+}
+
+.trend-page :focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 3px;
+}
+
+.trend-page button,
+.trend-page summary,
+.trend-page a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.trend-date-picker {
+  min-width: 0;
+  position: relative;
+}
+
+.trend-date-picker summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.trend-date-picker summary::-webkit-details-marker {
+  display: none;
+}
+
+.trend-date-popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  width: 100%;
+  min-width: 270px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 16px;
+  padding: 18px;
+  background: #071529;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+}
+
+.trend-date-popover > p:first-child {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: 14px;
+}
+
+.trend-date-popover label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.trend-date-popover input {
+  min-width: 0;
+  background: #0b1a2e;
+  padding: 6px 10px;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.trend-date-popover button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 14px;
+  border-radius: 10px;
+  padding: 8px;
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  transition: filter 0.2s;
+}
+
+.trend-date-popover button:hover {
+  filter: brightness(1.15);
+}
+
+.trend-run {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 54px;
+  border-radius: 14px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trend-run:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45);
+}
+
+.trend-run:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Research Flow Buttons */
+.trend-flow-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: -8px 0 24px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  background: rgba(13, 24, 48, 0.45);
+  border: 1px solid rgba(28, 42, 71, 0.6);
+  flex-wrap: wrap;
+}
+
+.trend-flow-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.trend-flow-items {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.trend-flow-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #e2e8f0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  transition: all 0.2s ease;
+}
+
+.trend-flow-button:hover {
+  background: rgba(14, 165, 233, 0.15);
+  border-color: rgba(56, 189, 248, 0.5);
+  color: #ffffff;
+}
+
+/* Results Grid */
+.trend-results-grid {
+  position: relative;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr);
+}
+
+.trend-chart-card {
+  min-width: 0;
+  padding: 24px 28px 16px;
+  scroll-margin-top: 24px;
+}
+
+.trend-chart-heading {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 54px;
+  margin-bottom: 12px;
+}
+
+.trend-chart-heading > div:first-of-type {
+  min-width: 0;
+  flex: 1;
+}
+
+.trend-weather-icon {
+  flex-shrink: 0;
+  color: #38bdf8;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.35));
+  stroke-width: 1.6;
+}
+
+.trend-chart-heading h2 {
+  font-size: 21px;
+  line-height: 26px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.trend-chart-heading p {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-top: 3px;
+  line-height: 20px;
+}
+
+.trend-chart-toggle {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  border: 1px solid rgba(41, 67, 107, 0.6);
+  border-radius: 12px;
+  background: rgba(13, 24, 48, 0.6);
+  overflow: hidden;
+}
+
+.trend-chart-toggle button {
+  padding: 8px 14px;
+  color: #94a3b8;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.trend-chart-toggle button + button::before {
+  content: '';
+  width: 1px;
+  height: 20px;
+  position: absolute;
+  left: 0;
+  top: 8px;
+  background: rgba(41, 67, 107, 0.6);
+}
+
+.trend-chart-toggle .active {
+  border-radius: 10px;
+  color: #ffffff;
+  background: rgba(14, 165, 233, 0.25);
+  box-shadow: inset 0 0 10px rgba(56, 189, 248, 0.3);
+  outline: 1px solid #38bdf8;
+  outline-offset: -1px;
+}
+
+.trend-chart-placeholder {
+  min-height: 285px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.trend-chart-placeholder svg {
+  color: #38bdf8;
+}
+
+.trend-chart-placeholder span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* At a Glance Card */
+.trend-glance {
+  position: relative;
+  overflow: hidden;
+  padding: 24px 24px;
+  background: linear-gradient(145deg, rgba(14, 30, 60, 0.85) 0%, rgba(10, 18, 36, 0.95) 100%);
+}
+
+.trend-glance > h2 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 21px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+.trend-glance > h2 svg {
+  color: #38bdf8;
+}
+
+.trend-glance-wave {
+  position: absolute;
+  right: -10px;
+  top: -10px;
+  width: 140px;
+  height: 70px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.trend-stats {
+  display: grid;
+  gap: 12px;
+  position: relative;
+}
+
+.trend-stat {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  border: 1px solid rgba(30, 58, 95, 0.6);
+  border-radius: 14px;
+  padding: 10px 18px;
+  min-height: 72px;
+  background: rgba(12, 22, 44, 0.6);
+}
+
+.trend-stat-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.7);
+  color: #38bdf8;
+}
+
+.trend-stat p {
+  font-size: 13px;
+  line-height: 16px;
+  margin-bottom: 4px;
+  color: #94a3b8;
+}
+
+.trend-stat strong {
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.trend-positive {
+  color: #34d399;
+}
+
+.trend-negative {
+  color: #f87171;
+}
+
+.trend-rate-unit {
+  font-size: 14px;
+  text-transform: none;
+  white-space: nowrap;
+  color: #94a3b8;
+}
+
+.trend-check-ring {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #34d399;
+  border-radius: 50%;
+  color: #34d399;
+}
+
+.trend-significance {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.trend-significance > span {
+  font-size: 13px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* Big Picture Section */
+.trend-picture {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 92px;
+  gap: 28px;
+  margin: 24px 0;
+  padding: 20px 220px 20px 28px;
+  overflow: hidden;
+  border-color: rgba(56, 189, 248, 0.3);
+  background: linear-gradient(135deg, rgba(8, 47, 73, 0.4) 0%, rgba(10, 18, 36, 0.85) 100%);
+}
+
+.trend-picture h2 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  min-width: 250px;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.trend-picture h2 svg {
+  color: #38bdf8;
+  stroke-width: 1.6;
+}
+
+.trend-picture-copy {
+  border-left: 1px solid rgba(56, 189, 248, 0.25);
+  padding-left: 24px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.trend-variable-illustration {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: 97px;
+  width: 225px;
+  pointer-events: none;
+}
+
+/* Details Tabs */
+.trend-details {
+  max-width: 960px;
+  margin: 24px auto 0;
+  scroll-margin-top: 24px;
+}
+
+.trend-detail-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 8px 16px;
+  border-radius: 16px;
+}
+
+.trend-detail-button {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  color: #94a3b8;
+  border: 1px solid rgba(41, 67, 107, 0.5);
+  border-radius: 12px;
+  background: rgba(13, 24, 48, 0.4);
+  transition: all 0.2s;
+}
+
+.trend-detail-button:hover {
+  color: #ffffff;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.trend-detail-button.active {
+  background: rgba(14, 165, 233, 0.2);
+  color: #38bdf8;
+  border-color: #38bdf8;
+  font-weight: 600;
+}
+
+.trend-detail-content {
+  padding: 24px 28px;
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #cbd5e1;
+}
+
+.trend-detail-content h2 {
+  font-size: 18px;
+  color: #38bdf8;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.trend-detail-content dt {
+  color: #94a3b8;
+  text-transform: capitalize;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.trend-comparison-value {
+  display: block;
+  font-size: 19px;
+  color: #38bdf8;
+  margin-top: 6px;
+}
+
+/* Source Note & Errors */
+.trend-source-note {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.trend-source-note > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #0284c7;
+}
+
+.trend-source-note button {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: #94a3b8;
+}
+
+.trend-source-note button:hover {
+  color: #38bdf8;
+}
+
+.trend-inline-error {
+  color: #f87171;
+  font-size: 13px;
+  margin: -10px 10px 16px;
+}
+
+.trend-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  background: rgba(127, 29, 29, 0.3);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  padding: 14px 20px;
+  border-radius: 14px;
+  color: #fecdd3;
+  font-size: 14px;
+}
+
+.trend-error button {
+  text-decoration: underline;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.trend-unavailable {
+  margin: -6px 0 18px;
+  padding: 12px 18px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 12px;
+  background: rgba(14, 165, 233, 0.1);
+  color: #e0f2fe;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Responsive queries */
+@media (max-width: 1200px) {
+  .trend-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .trend-run {
+    grid-column: 1 / -1;
+  }
+  .trend-results-grid {
+    grid-template-columns: 1fr;
+  }
+  .trend-picture {
+    padding-right: 28px;
+  }
+  .trend-variable-illustration {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .trend-content {
+    width: calc(100% - 32px);
+  }
+  .trend-controls {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+  .trend-stats {
+    grid-template-columns: 1fr;
+  }
+  .trend-picture {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .trend-picture-copy {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid rgba(56, 189, 248, 0.25);
+    padding-top: 14px;
+  }
+  .trend-detail-tabs {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trend-page *,
+  .trend-page *::before,
+  .trend-page *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
