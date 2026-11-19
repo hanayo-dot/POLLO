@@ -228,7 +228,7 @@ export default function InvestigationWorkspacePage() {
   return (
     <div className={`${styles.page} relative isolate min-h-screen bg-[#070b14] text-white`}>
       <video
-        className="fixed inset-0 z-0 h-full w-full object-cover opacity-85"
+        className="fixed inset-0 z-0 h-full w-full object-cover opacity-40 pointer-events-none"
         src="/videos/investigate-background.mp4"
         autoPlay
         loop
@@ -239,7 +239,7 @@ export default function InvestigationWorkspacePage() {
         tabIndex={-1}
       />
       <div
-        className="pointer-events-none fixed inset-0 z-[1] bg-gradient-to-br from-[#102d35]/35 via-[#1b4a50]/10 to-[#d7a77a]/20"
+        className="pointer-events-none fixed inset-0 z-[1] bg-gradient-to-b from-[#070b14]/75 via-[#070b14]/85 to-[#070b14]"
         aria-hidden="true"
       />
       {/* Execution Toast / Progress */}

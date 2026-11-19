@@ -151,7 +151,22 @@ export default function TrendAnalysis() {
   const showSection = (name: string) => { setSection(name); document.getElementById("trend-details")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" }); };
 
   return <div ref={root} className="trend-page">
-    <div className="trend-content">
+    <video
+      className="fixed inset-0 z-0 h-full w-full object-cover opacity-35 pointer-events-none"
+      src="/videos/trend-analysis-bg.mp4"
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="auto"
+      aria-hidden="true"
+      tabIndex={-1}
+    />
+    <div
+      className="pointer-events-none fixed inset-0 z-[1] bg-gradient-to-b from-[#070b14]/70 via-[#070b14]/85 to-[#070b14]"
+      aria-hidden="true"
+    />
+    <div className="trend-content relative z-10">
       <header className="trend-hero trend-reveal">
         <div className="trend-badge">
           <Sparkles size={14} className="text-cyan-400" />
