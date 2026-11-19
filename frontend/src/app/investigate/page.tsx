@@ -253,21 +253,21 @@ export default function InvestigationWorkspacePage() {
       {/* Main Workspace Wrapper */}
       <main className="relative z-10 mx-auto w-full max-w-[1500px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-9">
         {/* Workspace Top Header Bar */}
-        <div className="relative overflow-hidden rounded-[28px] border border-white/60 bg-white/45 p-6 shadow-[0_18px_60px_rgba(10,35,40,0.14)] backdrop-blur-2xl sm:p-8">
-          <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/25 blur-3xl" />
+        <div className="relative overflow-hidden rounded-[28px] border border-cyan-500/25 bg-[#0b101d]/65 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.5)] backdrop-blur-2xl sm:p-8">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
           <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="mb-2 flex flex-wrap items-center gap-2">
-                <span className="flex items-center gap-1.5 rounded-md border border-white/70 bg-white/55 px-2.5 py-1 font-mono text-xs font-medium text-teal-900 backdrop-blur-lg">
+                <span className="flex items-center gap-1.5 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 font-mono text-xs font-medium text-cyan-300 backdrop-blur-lg">
                   <Sparkles className="h-3.5 w-3.5" />
                   NASA EOSDIS Observational Core
                 </span>
-                <span className="font-mono text-xs text-slate-700">2000–2025 Multi-Decadal Record</span>
+                <span className="font-mono text-xs text-slate-400">2000–2025 Multi-Decadal Record</span>
               </div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-[#173b38] sm:text-3xl">
+              <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
                 Investigation Workspace
               </h1>
-              <p className="mt-1 max-w-2xl text-sm text-slate-700">
+              <p className="mt-1 max-w-2xl text-sm text-slate-300">
                 Explore and analyse environmental trends across any part of the world using NASA scientific data.
               </p>
             </div>
