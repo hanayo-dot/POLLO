@@ -5,7 +5,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 import type { EChartsOption } from "echarts";
 import { gsap } from "gsap";
-import { ArrowDownRight, ArrowUpRight, ArrowUpDown, CalendarDays, ChartColumn, ChartLine, ChartArea, Check, ChevronDown, CloudRain, FlaskConical, FileText, Lightbulb, LoaderCircle, MapPin, Minus, RefreshCw, Sparkles, House, Search, Database, Bell, CircleUserRound, X, Thermometer, Sprout, Waves } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, ArrowUpDown, CalendarDays, ChartColumn, ChartLine, ChartArea, Check, ChevronDown, CloudRain, FlaskConical, FileText, Lightbulb, LoaderCircle, MapPin, Minus, RefreshCw, Sparkles, Thermometer, Sprout, Waves, ExternalLink, ArrowRight } from "lucide-react";
 import { fetchDatasets, fetchRegions, fetchTimeSeries } from "../../services/api";
 import type { DatasetVariable, Region } from "../../types";
 import { VariableIllustration } from "./VariableIllustration";
@@ -36,7 +36,6 @@ export default function TrendAnalysis() {
   const [error, setError] = useState("");
   const [view, setView] = useState<"line" | "bar" | "area">("line");
   const [section, setSection] = useState<string | null>(null);
-  const [menu, setMenu] = useState<"notifications" | "profile" | null>(null);
   const available = variableOptions(datasets, region);
   const activeChoice = available.find(choice => choice.id === variable);
   const selectedKind = activeChoice?.kind || "rainfall";
@@ -152,48 +151,161 @@ export default function TrendAnalysis() {
   const showSection = (name: string) => { setSection(name); document.getElementById("trend-details")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" }); };
 
   return <div ref={root} className="trend-page">
-    <div className="trend-space-art" aria-hidden="true" />
-    <nav className="trend-navigation" aria-label="Main navigation">
-      <a href="/dashboard" className="trend-brand" aria-label="POLLO home">
-        <svg viewBox="0 0 70 52" width="60" height="46" fill="none" aria-hidden="true"><circle cx="34" cy="26" r="21" stroke="#00e9f0" strokeWidth="1.8" /><path d="M19 23c1-9 8-15 16-14M22 42c8 7 19 5 25-2" stroke="#00c8f0" strokeWidth="2" strokeLinecap="round" /><ellipse cx="34" cy="27" rx="33" ry="9" transform="rotate(-25 34 27)" stroke="#00eff4" strokeWidth="1.8" /><path d="m51 11 5 1-3 4" stroke="#00eff4" strokeWidth="1.5" /></svg>
-        <span>POLLO</span>
-      </a>
-      <div className="trend-nav-links">
-        <a href="/dashboard"><House /><span>Home</span></a>
-        <a href="#analysis-controls"><Search /><span>Investigate</span></a>
-        <a href="#trend-chart"><ChartColumn /><span>Visualise</span></a>
-        <a href="#trend-chart" className="active" aria-current="page"><ChartLine /><span>Trend Analysis</span></a>
-        <a aria-label="Insights" href={result && resultSelection ? `/insights?${new URLSearchParams(resultSelection)}` : "/insights"}><Lightbulb /><span>Insights</span></a>
-        <a aria-label="Data Sources" href={result && resultSelection ? `/data-sources?${new URLSearchParams(resultSelection)}` : "/data-sources"}><Database /><span>Data Sources</span></a>
-      </div>
-      <div className="trend-nav-actions">
-        <label className="trend-location"><MapPin size={21} /><select aria-label="Region" value={region} disabled={catalogLoading || loading} onChange={e => {
-          const id = e.target.value; setRegion(id); setResult(null); setError("");
-          const next = variableOptions(datasets, id);
-          setVariable(next.find(choice => choice.kind === selectedKind)?.id || "rainfall");
-        }}>{regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></label>
-        <button type="button" className="trend-icon-button" aria-label="Analysis notifications" aria-expanded={menu === "notifications"} onClick={() => setMenu(menu === "notifications" ? null : "notifications")}><Bell /></button>
-        <button type="button" className="trend-icon-button" aria-label="Workspace menu" aria-expanded={menu === "profile"} onClick={() => setMenu(menu === "profile" ? null : "profile")}><CircleUserRound /></button>
-      </div>
-      {menu && <div className="trend-nav-popover"><button type="button" className="float-right" aria-label="Close menu" onClick={() => setMenu(null)}><X size={18} /></button><h2>{menu === "notifications" ? "Analysis updates" : "POLLO"}</h2><p>{menu === "notifications" ? loading ? "Your analysis is running…" : error || (result ? `Analysis ready for ${result.region.name}.` : "Choose a variable and run your first analysis.") : "Your climate exploration workspace."}</p>{menu === "profile" && <a href="/dashboard">Go to dashboard →</a>}</div>}
-    </nav>
-
-    <div className="trend-content">
+    <video
+      className="fixed inset-0 z-0 h-full w-full object-cover opacity-80 pointer-events-none"
+      src="/videos/trend-analysis-bg.mp4"
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="auto"
+      aria-hidden="true"
+      tabIndex={-1}
+    />
+    <div
+      className="pointer-events-none fixed inset-0 z-[1] bg-gradient-to-b from-[#070b14]/30 via-transparent to-[#070b14]/60"
+      aria-hidden="true"
+    />
+    <div className="trend-content relative z-10">
       <header className="trend-hero trend-reveal">
-        <p className="trend-eyebrow">TREND ANALYSIS</p>
-        <h1>What’s <em className="trend-changing">Changing</em> Over Time?</h1>
-        <p className="trend-intro">Uncover long-term patterns, the direction of change, and whether it’s statistically significant.</p>
+        <div className="trend-badge">
+          <Sparkles size={14} className="text-cyan-400" />
+          <span>NASA OBSERVATIONAL ARCHIVE • NON-PARAMETRIC TREND DETECTIVE</span>
+        </div>
+        <h1 className="trend-title">
+          Planetary Trend <span className="text-cyan-400">&amp;</span> Divergence Analysis
+        </h1>
+        <p className="trend-intro">
+          Analyze multi-decadal monotonic patterns, Sen’s slope rate estimators, and Mann-Kendall statistical significance across verified Earth observation datasets.
+        </p>
       </header>
 
       <form id="analysis-controls" onSubmit={e => { e.preventDefault(); void run(); }} className="trend-panel trend-controls trend-reveal">
-        <label className="trend-control trend-variable"><SelectionIcon size={34} /><span><span className="trend-control-label">Climate Variable</span><select aria-label="Climate variable" value={variable} disabled={catalogLoading || loading} onChange={e => { setVariable(e.target.value); setResult(null); setError(""); }}>{available.map(choice => <option key={choice.kind} value={choice.id}>{choice.label}</option>)}</select></span><ChevronDown size={22} /></label>
-        <span className="trend-control-divider" aria-hidden="true" />
+        <label className="trend-control trend-region">
+          <MapPin size={24} className="text-cyan-400 shrink-0" />
+          <span>
+            <span className="trend-control-label">Geographic Region</span>
+            <select
+              aria-label="Region"
+              value={region}
+              disabled={catalogLoading || loading}
+              onChange={e => {
+                const id = e.target.value;
+                setRegion(id);
+                setResult(null);
+                setError("");
+                const next = variableOptions(datasets, id);
+                setVariable(next.find(choice => choice.kind === selectedKind)?.id || "rainfall");
+              }}
+            >
+              {regions.map(r => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+          </span>
+          <ChevronDown size={18} className="text-slate-400 shrink-0" />
+        </label>
+
+        <label className="trend-control trend-variable">
+          <SelectionIcon size={24} className="text-cyan-400 shrink-0" />
+          <span>
+            <span className="trend-control-label">Climate Variable</span>
+            <select
+              aria-label="Climate variable"
+              value={variable}
+              disabled={catalogLoading || loading}
+              onChange={e => {
+                setVariable(e.target.value);
+                setResult(null);
+                setError("");
+              }}
+            >
+              {available.map(choice => (
+                <option key={choice.kind} value={choice.id}>
+                  {choice.label}
+                </option>
+              ))}
+            </select>
+          </span>
+          <ChevronDown size={18} className="text-slate-400 shrink-0" />
+        </label>
+
         <details className="trend-date-picker">
-          <summary className="trend-control"><CalendarDays size={32} /><span><span className="trend-control-label">Time Range</span><strong>{start.slice(0, 4) || "Start"} – {end.slice(0, 4) || "End"}</strong></span><ChevronDown size={22} /></summary>
-          <div className="trend-date-popover"><p>Select the historical period</p><label>From<input aria-label="Start month" type="month" required value={start} disabled={loading} onChange={e => setStart(e.target.value)} /></label><label>To<input aria-label="End month" type="month" required min={start} value={end} disabled={loading} onChange={e => setEnd(e.target.value)} /></label>{invalidRange && <p role="alert" className="text-rose-300">The end must be on or after the start.</p>}<button type="button" onClick={e => e.currentTarget.closest("details")?.removeAttribute("open")}>Apply range <Check size={16} /></button></div>
+          <summary className="trend-control">
+            <CalendarDays size={24} className="text-cyan-400 shrink-0" />
+            <span>
+              <span className="trend-control-label">Historical Period</span>
+              <strong>{start.slice(0, 4) || "Start"} – {end.slice(0, 4) || "End"}</strong>
+            </span>
+            <ChevronDown size={18} className="text-slate-400 shrink-0" />
+          </summary>
+          <div className="trend-date-popover">
+            <p>Select historical range</p>
+            <label>
+              From
+              <input
+                aria-label="Start month"
+                type="month"
+                required
+                value={start}
+                disabled={loading}
+                onChange={e => setStart(e.target.value)}
+              />
+            </label>
+            <label>
+              To
+              <input
+                aria-label="End month"
+                type="month"
+                required
+                min={start}
+                value={end}
+                disabled={loading}
+                onChange={e => setEnd(e.target.value)}
+              />
+            </label>
+            {invalidRange && <p role="alert" className="text-rose-400 text-xs">The end must be on or after the start.</p>}
+            <button type="button" onClick={e => e.currentTarget.closest("details")?.removeAttribute("open")}>
+              Apply range <Check size={16} />
+            </button>
+          </div>
         </details>
-        <button className="trend-run" disabled={loading || catalogLoading || invalidRange || !variable || !region || unavailable} type="submit">{loading ? <LoaderCircle className="animate-spin" size={28} /> : <RefreshCw size={28} />}<span>{loading ? "Analysing…" : "Run Analysis"}</span><span className="trend-button-spark" aria-hidden="true">✳</span></button>
+
+        <button
+          className="trend-run"
+          disabled={loading || catalogLoading || invalidRange || !variable || !region || unavailable}
+          type="submit"
+        >
+          {loading ? <LoaderCircle className="animate-spin" size={20} /> : <RefreshCw size={20} />}
+          <span>{loading ? "Analysing…" : "Run Analysis"}</span>
+        </button>
       </form>
+
+      {result && resultSelection && (
+        <div className="trend-flow-links trend-reveal">
+          <span className="trend-flow-label">CONTINUE INVESTIGATION:</span>
+          <div className="trend-flow-items">
+            <a
+              href={`/insights?${new URLSearchParams(resultSelection)}`}
+              className="trend-flow-button"
+            >
+              <Lightbulb size={16} className="text-cyan-400" />
+              <span>Explore Key Discoveries</span>
+              <ArrowRight size={14} className="text-slate-400" />
+            </a>
+            <a
+              href={`/data-sources?${new URLSearchParams(resultSelection)}`}
+              className="trend-flow-button"
+            >
+              <FileText size={16} className="text-cyan-400" />
+              <span>Data Provenance &amp; Citations</span>
+              <ExternalLink size={14} className="text-slate-400" />
+            </a>
+          </div>
+        </div>
+      )}
       {unavailable && <p role="status" className="trend-unavailable">{activeChoice.label} data is not available for this region yet. Choose another variable to run an analysis.</p>}
       {invalidRange && <p role="alert" className="trend-inline-error">Choose a valid start and end month.</p>}
       {error && <div role="alert" className="trend-error">{error}<button type="button" onClick={() => void run()}>Retry analysis</button></div>}

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { gsap } from "gsap";
-import { ArrowDownRight, ArrowLeft, ArrowUpDown, ArrowUpRight, CalendarDays, ChartColumnIncreasing, ChartLine, Check, Database, Download, Droplets, FileText, House, Leaf, Lightbulb, LoaderCircle, MapPin, Minus, Search, Sparkles, Sprout, Star, Target, Users } from "lucide-react";
+import { ArrowDownRight, ArrowLeft, ArrowUpDown, ArrowUpRight, CalendarDays, ChartColumnIncreasing, ChartLine, Check, Database, Download, Droplets, FileText, Leaf, Lightbulb, LoaderCircle, MapPin, Minus, Sparkles, Sprout, Star, Target, Users } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { fetchTimeSeries } from "../../services/api";
 import { VariableIllustration } from "../trend-analysis/VariableIllustration";
@@ -11,7 +11,6 @@ import { variableKind } from "../trend-analysis/variables";
 import { buildReport, describeFindings, formatP, hasTrend, readSelection } from "./findings";
 import type { Analysis, Selection } from "./findings";
 
-const NAV_LINK = "flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap text-sm transition-colors hover:text-cyan-200 max-[600px]:text-xs";
 const STATE_PANEL = "insights-panel flex min-h-[370px] flex-col items-center justify-center gap-5 p-8 text-center";
 
 function Heading({ icon: Icon, children, className = "" }: { icon: LucideIcon; children: ReactNode; className?: string }) {
@@ -111,34 +110,28 @@ export default function Insights() {
     finally { if (url) { const blobURL = url; setTimeout(() => URL.revokeObjectURL(blobURL), 10000); } setDownloading(false); }
   }
 
-  return <div ref={root} className="insights-page relative isolate min-h-screen overflow-clip bg-discovery-space font-[Arial,Helvetica,sans-serif] text-[#f4f7ff] [&_:focus-visible]:outline [&_:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-4 [&_:focus-visible]:outline-cyan-200">
-    <a className="fixed left-2 top-2 z-50 -translate-y-[150%] rounded-lg bg-discovery-surface p-3 focus:translate-y-0" href="#insights-main">Skip to findings</a>
-    <div className="insights-earth pointer-events-none absolute right-0 top-[63px] -z-10 h-[310px] w-full max-[600px]:top-[116px] max-[600px]:opacity-40" aria-hidden="true"/>
-
-    <nav className="relative z-30 flex min-h-[62px] items-center justify-between gap-[18px] border-b border-[#164165] bg-[#02101ee8] px-[max(28px,calc((100vw-1560px)/2))] max-[1250px]:flex-wrap max-[1250px]:py-2.5 max-[600px]:px-4" aria-label="Main navigation">
-      <a className="flex shrink-0 items-center gap-2.5 text-[27px] font-bold tracking-tight max-[600px]:gap-1 max-[600px]:text-xl" href="/dashboard"><svg viewBox="0 0 70 52" className="h-11 w-14 text-cyan-300 max-[600px]:h-9 max-[600px]:w-10" fill="none" aria-hidden="true"><circle cx="34" cy="26" r="21" stroke="currentColor" strokeWidth="1.8"/><ellipse cx="34" cy="27" rx="33" ry="9" transform="rotate(-25 34 27)" stroke="currentColor" strokeWidth="1.8"/><path d="M19 23c1-9 8-15 16-14" stroke="currentColor" strokeWidth="2"/></svg><span>POLLO</span></a>
-      <div className="flex items-center justify-center gap-[clamp(8px,1.2vw,24px)] max-[1250px]:order-3 max-[1250px]:w-full max-[1250px]:justify-between max-[1250px]:overflow-x-auto max-[600px]:justify-start max-[600px]:gap-[18px] [&_svg]:h-[22px] [&_svg]:w-[22px] [&_span]:max-[600px]:sr-only">
-        <a href="/dashboard" aria-label="Home" className={NAV_LINK}><House aria-hidden="true"/><span>Home</span></a>
-        <a href={`${back}#analysis-controls`} aria-label="Investigate" className={NAV_LINK}><Search aria-hidden="true"/><span>Investigate</span></a>
-        <a href={`${back}#trend-chart`} aria-label="Visualise" className={NAV_LINK}><ChartColumnIncreasing aria-hidden="true"/><span>Visualise</span></a>
-        <a href={back} aria-label="Trend Analysis" className={NAV_LINK}><ChartLine aria-hidden="true"/><span>Trend Analysis</span></a>
-        <a href="#insights-main" aria-current="page" aria-label="Insights" className={`${NAV_LINK} rounded-full border border-cyan-300 bg-cyan-500/10 px-[17px] shadow-[inset_0_-3px_8px_#00c8ff38] [&_svg]:text-cyan-300 [&_span]:max-[600px]:not-sr-only`}><Lightbulb aria-hidden="true"/><span>Insights</span></a>
-        <a href={`/data-sources${selection ? `?${new URLSearchParams(selection)}` : ""}`} aria-label="Data Sources" className={NAV_LINK}><Database aria-hidden="true"/><span>Data Sources</span></a>
-      </div>
-      <span className="flex max-w-[250px] items-center gap-[9px] rounded-full border border-[#164b71] bg-[#061d30c9] px-[17px] py-2 text-sm max-[600px]:max-w-[180px] max-[600px]:text-xs"><MapPin size={20} className="shrink-0 text-discovery-earth" aria-hidden="true"/>{data?.region.name || "Your investigation"}</span>
-    </nav>
-
-    <main id="insights-main" className="mx-auto w-[calc(100%-96px)] max-w-[1560px] pb-6 max-[1250px]:w-[calc(100%-48px)] max-[600px]:w-[calc(100%-28px)]" tabIndex={-1}>
-      <header className="insights-reveal pl-[58px] pt-[25px] max-[950px]:pl-3 max-[600px]:pl-1">
-        <p className="mb-2 text-sm font-bold leading-[18px] tracking-[.16em] text-cyan-300">INSIGHTS &amp; FINDINGS</p>
-        <h1 className="text-[clamp(25px,2.1vw,34px)] font-bold leading-[1.3] tracking-[-.6px] max-[600px]:text-[27px]">Key <em className="insights-discoveries relative text-cyan-400">Discoveries</em> from Your Investigation</h1>
-        <p className="mt-2 text-[17px] leading-normal max-[600px]:text-[15px]">A clear, data-based summary of what the analysis reveals about environmental changes.</p>
+  return <div ref={root} className="insights-page relative isolate min-h-screen overflow-clip text-[#f4f7ff] pb-12 [&_:focus-visible]:outline [&_:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-4 [&_:focus-visible]:outline-cyan-200">
+    <main id="insights-main" className="mx-auto w-[calc(100%-48px)] max-w-[1560px] pt-6 pb-6 max-[600px]:w-[calc(100%-28px)]" tabIndex={-1}>
+      <header className="insights-reveal mb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-cyan-400 mb-3">
+          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          <span>NASA OBSERVATIONAL ARCHIVE • SYNTHESIS &amp; INTERPRETATION</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
+          Key Discoveries <span className="text-cyan-400">&amp;</span> Planetary Insights
+        </h1>
+        <p className="mt-2 text-slate-300 text-sm sm:text-base max-w-3xl">
+          A clear, scientifically sound executive summary of what multi-decadal observations reveal about environmental change.
+        </p>
       </header>
 
-      <section className="insights-panel insights-reveal mx-4 mb-5 mt-6 grid min-h-[78px] grid-cols-[1.25fr_1fr_auto] items-center gap-7 border-cyan-400 bg-gradient-to-r from-[#07334cd9] to-[#03182be8] px-[34px] py-[13px] shadow-[inset_0_0_20px_#009edb24] max-[1250px]:mx-0 max-[1250px]:gap-[18px] max-[1250px]:px-[22px] max-[1250px]:py-4 max-[950px]:grid-cols-2 max-[600px]:grid-cols-1 max-[600px]:rounded-[20px] max-[600px]:p-[18px]" aria-label="Analysis selection">
-        <div className="flex min-w-0 items-center gap-5 border-r border-[#477795] pr-[18px] text-lg max-[1250px]:gap-3 max-[1250px]:text-[15px] max-[600px]:border-0"><Droplets className="h-[30px] w-[30px] shrink-0 text-cyan-200" aria-hidden="true"/><span>Analysis: <strong>{findings ? `${findings.label} in ${data!.region.name}` : data ? `${data.variable.name} in ${data.region.name}` : loading ? "Loading your investigation…" : "No analysis selected"}</strong></span></div>
-        <div className="flex min-w-0 items-center gap-5 text-lg max-[1250px]:gap-3 max-[1250px]:text-[15px]"><CalendarDays className="h-[30px] w-[30px] shrink-0 text-cyan-200" aria-hidden="true"/><span>Period: <strong>{selection ? `${selection.start} – ${selection.end}` : "Select in Trend Analysis"}</strong></span></div>
-        <a className="inline-flex min-h-11 items-center justify-center gap-3 rounded-full border border-[#3a789e] bg-gradient-to-t from-[#123753] to-[#082139] px-[22px] py-2.5 text-base transition hover:-translate-y-0.5 hover:border-cyan-300 motion-reduce:transform-none motion-reduce:transition-none max-[1250px]:px-[15px] max-[1250px]:text-sm max-[950px]:col-span-2 max-[950px]:justify-self-start max-[600px]:col-span-1" href={back}><ArrowLeft size={21} aria-hidden="true"/>Back to Trend Analysis</a>
+      <section className="insights-panel insights-reveal mb-6 grid min-h-[78px] grid-cols-[1.25fr_1fr_auto] items-center gap-6 border-cyan-400/40 bg-gradient-to-r from-[#07334cd9] to-[#03182be8] px-6 py-4 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] max-[1250px]:gap-4 max-[950px]:grid-cols-2 max-[600px]:grid-cols-1 max-[600px]:rounded-[16px] max-[600px]:p-4" aria-label="Analysis selection">
+        <div className="flex min-w-0 items-center gap-4 border-r border-[#477795]/50 pr-4 text-base max-[1250px]:text-sm max-[600px]:border-0"><Droplets className="h-6 w-6 shrink-0 text-cyan-300" aria-hidden="true"/><span>Analysis: <strong>{findings ? `${findings.label} in ${data!.region.name}` : data ? `${data.variable.name} in ${data.region.name}` : loading ? "Loading your investigation…" : "No analysis selected"}</strong></span></div>
+        <div className="flex min-w-0 items-center gap-4 text-base max-[1250px]:text-sm"><CalendarDays className="h-6 w-6 shrink-0 text-cyan-300" aria-hidden="true"/><span>Period: <strong>{selection ? `${selection.start} – ${selection.end}` : "Select in Trend Analysis"}</strong></span></div>
+        <div className="flex items-center gap-3 max-[950px]:col-span-2 max-[950px]:justify-self-start max-[600px]:col-span-1 max-[600px]:flex-wrap">
+          <a className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-cyan-500/30 bg-[#082139] px-4 py-2 text-sm font-medium transition hover:border-cyan-300 hover:bg-[#0c2f52]" href={back}><ArrowLeft size={16} aria-hidden="true"/>Back to Trend Analysis</a>
+          <a className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-cyan-500/30 bg-[#082139] px-4 py-2 text-sm font-medium transition hover:border-cyan-300 hover:bg-[#0c2f52]" href={`/data-sources${selection ? `?${new URLSearchParams(selection)}` : ""}`}><Database size={16} aria-hidden="true"/>Data Sources</a>
+        </div>
       </section>
 
       {loading ? <section className={STATE_PANEL} role="status" aria-live="polite"><LoaderCircle className="animate-spin text-discovery-teal motion-reduce:animate-none" size={38} aria-hidden="true"/><h2 className="text-2xl font-bold">Reading your climate findings…</h2><p className="max-w-[650px] text-[#c7dfef]">Retrieving the selected measurements and statistical results. Vegetation data may take a few minutes.</p></section>

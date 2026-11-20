@@ -1,26 +1,26 @@
 .insights-panel {
-  @apply rounded-[27px] border border-[#126692] bg-discovery-surface;
-  background-image: linear-gradient(135deg, #10385bdf, #071c32f2 50%, #071a2ee8);
-  box-shadow: inset 0 1px 16px #209fff0e, 0 8px 30px #0002;
+  @apply rounded-[20px] border border-[#1c2a47]/80 bg-[#0b101d]/90 backdrop-blur-md;
+  background-image: linear-gradient(135deg, rgba(16, 56, 91, 0.45), rgba(7, 28, 50, 0.75) 50%, rgba(7, 26, 46, 0.85));
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .insights-heading {
-  @apply flex items-center gap-3 text-[22px] font-bold leading-tight tracking-[-.5px] min-[1251px]:gap-[17px] min-[1251px]:text-[25px];
+  @apply flex items-center gap-3 text-[20px] font-bold leading-tight tracking-[-.5px] min-[1251px]:gap-[15px] min-[1251px]:text-[23px];
 }
 
 .insights-heading > svg {
-  @apply h-8 w-8 shrink-0 text-cyan-300;
+  @apply h-7 w-7 shrink-0 text-cyan-300;
   filter: drop-shadow(0 0 6px #00cddd40);
 }
 
 .insights-button {
-  @apply inline-flex min-h-11 items-center justify-center gap-[11px] rounded-full border border-cyan-300 px-[23px] py-[11px] text-[17px] font-semibold transition duration-200 hover:-translate-y-0.5 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transform-none motion-reduce:transition-none;
-  background: linear-gradient(0deg, #075078b3, #031e31);
-  box-shadow: inset 0 -2px 9px #00e6e74d, 0 0 14px #00dbe421;
+  @apply inline-flex min-h-10 items-center justify-center gap-[10px] rounded-xl border border-cyan-400/40 px-[20px] py-[10px] text-[15px] font-semibold transition duration-200 hover:-translate-y-0.5 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transform-none motion-reduce:transition-none text-white;
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
 }
 
 .insights-download-button {
-  background: linear-gradient(165deg, #00bded, #0084ff 45%, #0056dc 80%, #00b9ea);
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
 }
 
 /* Decorative artwork, glows and waves complement the Tailwind layout. */
@@ -36,7 +36,7 @@
 }
 
 .insights-earth {
-  background: linear-gradient(0deg, #050b19, transparent 48%), url('/textures/trend-earth-horizon.png') right -44px / cover no-repeat;
+  background: transparent;
 }
 
 .insights-discoveries::after {
