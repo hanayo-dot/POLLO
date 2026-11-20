@@ -128,14 +128,27 @@ export default function VisualizationPage() {
 
   if (isLoading || !result) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-nasa-blue/30 border border-nasa-cyan/40 flex items-center justify-center text-nasa-cyan animate-spin">
-          <RefreshCw className="w-6 h-6" />
+      <div className="relative isolate min-h-[70vh]">
+        <video
+          className="pointer-events-none fixed inset-0 z-0 h-full w-full object-cover"
+          src="/videos/investigate-background.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+        <div className="relative z-10 min-h-[70vh] flex flex-col items-center justify-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-nasa-blue/30 border border-nasa-cyan/40 flex items-center justify-center text-nasa-cyan animate-spin">
+            <RefreshCw className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-white font-mono">
+            Synthesizing NASA Earth Observation Results...
+          </h3>
+          <p className="text-xs text-gray-400">Computing Mann-Kendall statistics and rendering spatial layers</p>
         </div>
-        <h3 className="text-base font-bold text-white font-mono">
-          Synthesizing NASA Earth Observation Results...
-        </h3>
-        <p className="text-xs text-gray-400">Computing Mann-Kendall statistics and rendering spatial layers</p>
       </div>
     );
   }
@@ -143,7 +156,19 @@ export default function VisualizationPage() {
   const { config, trend, datasetMetadata, spatialData } = result;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    <div className="relative isolate min-h-screen">
+      <video
+        className="pointer-events-none fixed inset-0 z-0 h-full w-full object-cover"
+        src="/videos/investigate-background.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+        tabIndex={-1}
+      />
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
       {/* Investigation Top Navigation & Action Header */}
       <div className="bg-gradient-to-r from-space-900 via-space-850 to-space-900 border border-space-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
         <div className="absolute -right-20 -top-20 w-64 h-64 bg-nasa-blue/15 rounded-full blur-3xl pointer-events-none" />
@@ -323,6 +348,7 @@ export default function VisualizationPage() {
         isOpen={isResearchModalOpen}
         onClose={() => setIsResearchModalOpen(false)}
       />
+      </div>
     </div>
   );
 }
