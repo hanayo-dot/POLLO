@@ -3,15 +3,16 @@ const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
   images: {
-    domains: ["gibs.earthdata.nasa.gov", "earthdata.nasa.gov"],
-  },
-  async rewrites() {
-    return [
+    remotePatterns: [
       {
-        source: "/api/v1/:path*",
-        destination: "http://localhost:8080/api/v1/:path*",
+        protocol: "https",
+        hostname: "gibs.earthdata.nasa.gov",
       },
-    ];
+      {
+        protocol: "https",
+        hostname: "earthdata.nasa.gov",
+      },
+    ],
   },
 };
 
